@@ -1,0 +1,5 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.18.0
+Date: 27. 3. 2020
+  Features:
+    - Changes evolution mechanic to allow for green play and changes how evolution increases
