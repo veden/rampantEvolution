@@ -1,8 +1,5 @@
 
-(module BuildScript racket
-  (provide all-defined-out)
-
-  (require file/zip)
+(require file/zip)
   (require json)
 
   (define modFolder "/mnt/gallery/gameFiles/factorio/mods/")
@@ -88,7 +85,7 @@
     (set! packageName (string-append (string-replace (hash-ref configuration 'name) " " "_")
                                      "_"
                                      (hash-ref configuration 'version)))
-
+    (print (string-append "copying " (hash-ref configuration 'name) (hash-ref configuration 'version)))
     (copyFiles modFolder))
 
   (define (zipIt)
@@ -98,11 +95,11 @@
     (set! packageName (string-append (string-replace (hash-ref configuration 'name) " " "_")
                                      "_"
                                      (hash-ref configuration 'version)))
-
+    (print (string-append "zipping " (hash-ref configuration 'name) (hash-ref configuration 'version)))
     (makeZip modFolder))
 
   (define (runStart)
     ;; (copyFiles modFolder)
     ;;(copyFiles zipModFolder)
     (makeZip modFolder)
-    (system*/exit-code "factorio")))
+    (system*/exit-code "factorio"))

@@ -46,7 +46,7 @@ local function onModSettingsChange(event)
     world.evolutionPerSpawnerKilled = settings.global["rampant-evolution-evolutionPerSpawnerKilled"].value * settingToPercent
     world.evolutionPerUnitKilled = settings.global["rampant-evolution-evolutionPerUnitKilled"].value * settingToPercent
     world.evolutionPerHiveKilled = settings.global["rampant-evolution-evolutionPerHiveKilled"].value * settingToPercent
-    
+
     world.getFlowQuery = {
         name = name,
         input = false,
@@ -59,10 +59,10 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    if not world.version or world.version < 1 then
+    if not world.version or world.version < 2 then
 
         for i,p in ipairs(game.connected_players) do
-            p.print("Rampant Evolution - Version 0.18.0")
+            p.print("Rampant Evolution - Version 1.0.0")
         end
         world.version = 1
     end
@@ -77,60 +77,65 @@ local function onTick(event)
     -- print(evo)
 
     local pollutionStats = game.pollution_statistics
+    local counts = pollutionStats.output_counts
 
-    for name,value in pairs(pollutionStats.output_counts) do
+    local pollutionFn = pollutionStats.get_flow_count
+    for name,value in pairs(counts) do
         query.name = name
         if (name == "tile-proxy") and (world.evolutionPerTileAbsorbed < 0) then
-            evo = evo + ((1 - evo) * world.evolutionPerTileAbsorbed * pollutionStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerTileAbsorbed * pollutionFn(query))
         elseif (name == "tree-proxy") and (world.evolutionPerTreeAbsorbed < 0) then
-            evo = evo + ((1 - evo) * world.evolutionPerTreeAbsorbed * pollutionStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerTreeAbsorbed * pollutionFn(query))
         elseif (name == "dying-tree-proxy") and (world.evolutionPerTreeDied < 0) then
-            evo = evo + ((1 - evo) * world.evolutionPerTreeDied * pollutionStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerTreeDied * pollutionFn(query))
         elseif (world.evolutionPerSpawnerAbsorbed < 0) and isValidSpawnerConsumer(name) then
-            evo = evo + ((1 - evo) * world.evolutionPerSpawnerAbsorbed * pollutionStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerSpawnerAbsorbed * pollutionFn(query))
         end
         if (evo < 0) then
             evo = 0
         end
     end
 
-    for name,value in pairs(pollutionStats.output_counts) do
+    for name,value in pairs(counts) do
         query.name = name
         if (name == "tile-proxy") and (world.evolutionPerTileAbsorbed > 0) then
-            evo = evo + ((1 - evo) * world.evolutionPerTileAbsorbed * pollutionStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerTileAbsorbed * pollutionFn(query))
         elseif (name == "tree-proxy") and (world.evolutionPerTreeAbsorbed > 0) then
-            evo = evo + ((1 - evo) * world.evolutionPerTreeAbsorbed * pollutionStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerTreeAbsorbed * pollutionFn(query))
         elseif (name == "dying-tree-proxy") and (world.evolutionPerTreeDied > 0) then
-            evo = evo + ((1 - evo) * world.evolutionPerTreeDied * pollutionStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerTreeDied * pollutionFn(query))
         elseif (world.evolutionPerSpawnerAbsorbed > 0) and isValidSpawnerConsumer(name) then
-            evo = evo + ((1 - evo) * world.evolutionPerSpawnerAbsorbed * pollutionStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerSpawnerAbsorbed * pollutionFn(query))
         end
     end
 
     local killStats = enemyForce.kill_count_statistics
 
-    for name,value in pairs(killStats.output_counts) do
+    counts = killStats.output_counts
+    local killFn = killStats.get_flow_count
+
+    for name,value in pairs(counts) do
         query.name = name
         if (world.evolutionPerSpawnerKilled < 0) and isValidSpawnerConsumer(name) then
-            evo = evo + ((1 - evo) * world.evolutionPerSpawnerKilled * killStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerSpawnerKilled * killFn(query))
         elseif (world.evolutionPerHiveKilled < 0) and isValidHiveConsumer(name) then
-            evo = evo + ((1 - evo) * world.evolutionPerHiveKilled * killStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerHiveKilled * killFn(query))
         elseif (world.evolutionPerUnitKilled < 0) and isValidUnit(name) then
-            evo = evo + ((1 - evo) * world.evolutionPerUnitKilled * killStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerUnitKilled * killFn(query))
         end
         if (evo < 0) then
             evo = 0
         end
     end
 
-    for name,value in pairs(killStats.output_counts) do
+    for name,value in pairs(counts) do
         query.name = name
         if (world.evolutionPerSpawnerKilled > 0) and isValidSpawnerConsumer(name) then
-            evo = evo + ((1 - evo) * world.evolutionPerSpawnerKilled * killStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerSpawnerKilled * killFn(query))
         elseif (world.evolutionPerHiveKilled > 0) and isValidHiveConsumer(name) then
-            evo = evo + ((1 - evo) * world.evolutionPerHiveKilled * killStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerHiveKilled * killFn(query))
         elseif (world.evolutionPerUnitKilled > 0) and isValidUnit(name) then
-            evo = evo + ((1 - evo) * world.evolutionPerUnitKilled * killStats.get_flow_count(world.getFlowQuery))
+            evo = evo + ((1 - evo) * world.evolutionPerUnitKilled * killFn(query))
         end
     end
 
