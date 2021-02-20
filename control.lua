@@ -6,13 +6,8 @@
 
 local settingToPercent = 1/10000000
 
-local entitySet
-
 -- imported functions
 
-local mLog10 = math.log10
-local mRandom = math.random
-local mSqrt = math.sqrt
 local sFind = string.find
 
 -- local references
@@ -48,7 +43,7 @@ local function onModSettingsChange(event)
     world.evolutionPerHiveKilled = settings.global["rampant-evolution-evolutionPerHiveKilled"].value * settingToPercent
 
     world.getFlowQuery = {
-        name = name,
+        name = "",
         input = false,
         -- precision_index = defines.flow_precision_index.one_second,
         precision_index = defines.flow_precision_index.one_minute,
@@ -61,7 +56,7 @@ end
 local function onConfigChanged()
     if not world.version or world.version < 2 then
 
-        for i,p in ipairs(game.connected_players) do
+        for _,p in ipairs(game.connected_players) do
             p.print("Rampant Evolution - Version 1.0.0")
         end
         world.version = 1
@@ -69,7 +64,7 @@ local function onConfigChanged()
     onModSettingsChange()
 end
 
-local function onTick(event)
+local function onTick()
     local enemyForce = game.forces.enemy
     local evo = enemyForce.evolution_factor
     local query = world.getFlowQuery
@@ -80,7 +75,7 @@ local function onTick(event)
     local counts = pollutionStats.output_counts
 
     local pollutionFn = pollutionStats.get_flow_count
-    for name,value in pairs(counts) do
+    for name in pairs(counts) do
         query.name = name
         if (name == "tile-proxy") and (world.evolutionPerTileAbsorbed < 0) then
             evo = evo + ((1 - evo) * world.evolutionPerTileAbsorbed * pollutionFn(query))
@@ -96,7 +91,7 @@ local function onTick(event)
         end
     end
 
-    for name,value in pairs(counts) do
+    for name in pairs(counts) do
         query.name = name
         if (name == "tile-proxy") and (world.evolutionPerTileAbsorbed > 0) then
             evo = evo + ((1 - evo) * world.evolutionPerTileAbsorbed * pollutionFn(query))
@@ -128,7 +123,7 @@ local function onTick(event)
         end
     end
 
-    for name,value in pairs(counts) do
+    for name in pairs(counts) do
         query.name = name
         if (world.evolutionPerSpawnerKilled > 0) and isValidSpawnerConsumer(name) then
             evo = evo + ((1 - evo) * world.evolutionPerSpawnerKilled * killFn(query))
