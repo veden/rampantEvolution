@@ -1,5 +1,5 @@
 data:extend({
-        
+
         {
             type = "double-setting",
             name = "rampant-evolution-evolutionPerSpawnerAbsorbed",
