@@ -30,7 +30,7 @@ end
 
 local function onModSettingsChange(event)
 
-    if event and (string.sub(event.setting, 1, 17) ~= "rampant-evolution") then
+    if event and (string.sub(event.setting, 1, #"rampant-evolution") ~= "rampant-evolution") then
         return false
     end
 
