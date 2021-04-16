@@ -56,12 +56,13 @@ end
 local function onConfigChanged()
     if not world.version or world.version < 2 then
 
+        onModSettingsChange()
+
         for _,p in ipairs(game.connected_players) do
-            p.print("Rampant Evolution - Version 1.0.0")
+            p.print("Rampant Evolution - Version 1.0.2")
         end
-        world.version = 1
+        world.version = 2
     end
-    onModSettingsChange()
 end
 
 local function onTick()
@@ -109,7 +110,7 @@ local function onTick()
     counts = killStats.output_counts
     local killFn = killStats.get_flow_count
 
-    for name,value in pairs(counts) do
+    for name in pairs(counts) do
         query.name = name
         if (world.evolutionPerSpawnerKilled < 0) and isValidSpawnerConsumer(name) then
             evo = evo + ((1 - evo) * world.evolutionPerSpawnerKilled * killFn(query))
