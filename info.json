@@ -1,10 +1,10 @@
 {
     "name" : "RampantEvolution",
     "factorio_version" : "1.1",
-    "version" : "1.0.2",
+    "version" : "1.1.0",
     "title" : "Rampant Evolution",
     "author" : "Veden",
     "homepage" : "",
-    "description" : "Changes evolution mechanic to allow for green play and changes how evolution increases. Adding to an existing map is not recommended.",
+    "description" : "Changes evolution mechanic to allow for green play and changes how evolution increases. Tries to balance evolution level with number of nests covered by pollution. Killing units reduces evolution. Adding to an existing map is not recommended.",
     "dependencies" : ["base >= 1.1.0", "? Rampant"]
 }

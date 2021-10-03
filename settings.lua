@@ -6,7 +6,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = -100000,
             maximum_value = 100000,
-            default_value = 45,
+            default_value = 15.75,
             order = "l[modifier]-m[unit]",
             per_user = false
         },
@@ -17,7 +17,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = -100000,
             maximum_value = 100000,
-            default_value = -4,
+            default_value = -8,
             order = "l[modifier]-m[unit]",
             per_user = false
         },
@@ -39,7 +39,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = -100000,
             maximum_value = 100000,
-            default_value = 3,
+            default_value = 7,
             order = "l[modifier]-m[unit]",
             per_user = false
         },
@@ -50,7 +50,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = -100000,
             maximum_value = 100000,
-            default_value = 100,
+            default_value = 1000,
             order = "l[modifier]-m[unit]",
             per_user = false
         },
@@ -61,7 +61,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = -100000,
             maximum_value = 100000,
-            default_value = -5000,
+            default_value = -50000,
             order = "l[modifier]-m[unit]",
             per_user = false
         },
@@ -72,7 +72,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = -100000,
             maximum_value = 100000,
-            default_value = -0.0001,
+            default_value = -10,
             order = "l[modifier]-m[unit]",
             per_user = false
         }
