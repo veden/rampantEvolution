@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.0
 Date: 16. 4. 2021
+  Improvements:
+    - Optimized calculating evolution
   Tweaks:
     - Reduced evolution from spawner pollution absorption by 65%
     - Increased evolution reduction from trees absorbing pollution by 2x
