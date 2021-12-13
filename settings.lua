@@ -1,6 +1,44 @@
 data:extend({
 
         {
+            type = "bool-setting",
+            name = "rampant-evolution--displayEvolutionMsg",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "l[modifier]-m[unit]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant-evolution--setMapSettingsToZero",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "l[modifier]-m[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--displayEvolutionMsgInterval",
+            setting_type = "runtime-global",
+            minimum_value = 0.001,
+            default_value = 10.0,
+            maximum_value = 9999999999,
+            order = "l[modifier]-m[unit]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant-evolution--recalculateAllEvolution",
+            setting_type = "runtime-global",
+            default_value = true,
+            order = "l[modifier]-m[unit]",
+            per_user = false
+        },
+
+        {
             type = "double-setting",
             name = "rampant-evolution-evolutionPerSpawnerAbsorbed",
             setting_type = "runtime-global",
@@ -61,7 +99,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = -100000,
             maximum_value = 100000,
-            default_value = -50000,
+            default_value = -30000,
             order = "l[modifier]-m[unit]",
             per_user = false
         },
@@ -74,6 +112,28 @@ data:extend({
             maximum_value = 100000,
             default_value = -10,
             order = "l[modifier]-m[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--evolutionPerTime",
+            setting_type = "runtime-global",
+            minimum_value = -100000,
+            maximum_value = 100000,
+            default_value = 0,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--evolutionPerPollution",
+            setting_type = "runtime-global",
+            minimum_value = -100000,
+            maximum_value = 100000,
+            default_value = 0,
+            order = "l[modifier]-mz[unit]",
             per_user = false
         }
 })
