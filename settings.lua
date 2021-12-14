@@ -20,6 +20,17 @@ data:extend({
 
         {
             type = "double-setting",
+            name = "rampant-evolution--minimumDevolutionPercentage",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 0,
+            maximum_value = 1,
+            order = "l[modifier]-m[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
             name = "rampant-evolution--displayEvolutionMsgInterval",
             setting_type = "runtime-global",
             minimum_value = 0.001,

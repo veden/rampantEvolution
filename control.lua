@@ -110,7 +110,8 @@ local function reset()
         ["hive"] = 0,
         ["unit"] = 0,
         ["totalPollution"] = 0,
-        ["time"] = 0
+        ["time"] = 0,
+        ["minimumEvolution"] = 0
     }
 end
 
@@ -133,6 +134,8 @@ local function onModSettingsChange(event)
 
     world.displayEvolutionMsg = settings.global["rampant-evolution--displayEvolutionMsg"].value
     world.displayEvolutionMsgInterval = math.ceil(settings.global["rampant-evolution--displayEvolutionMsgInterval"].value * (60 * 60))
+
+    world.minimumDevolutionPercentage = settings.global["rampant-evolution--minimumDevolutionPercentage"].value
 
     if settings.global["rampant-evolution--setMapSettingsToZero"].value then
         game.map_settings.enemy_evolution.enabled = false
@@ -329,13 +332,14 @@ local function printEvolutionMsg()
             roundTo(stats["hive"]*100, 0.01),
             roundTo(stats["unit"]*100, 0.01),
             roundTo(stats["totalPollution"]*100, 0.01),
-            roundTo(stats["time"]*100, 0.01)
+            roundTo(stats["time"]*100, 0.01),
+            roundTo(stats["minimumEvolution"]*100, 0.01)
     })
 end
 
 local function onProcessing(event)
     local enemy = game.forces.enemy
-    enemy.evolution_factor = processKill(
+    local evo = processKill(
         processPollution(
             enemy.evolution_factor,
             1000
@@ -345,6 +349,15 @@ local function onProcessing(event)
     if (event.tick % 60) == 0 then
         world.killDeltas["time"] = (world.killDeltas["time"] or 0) + 1
     end
+
+    local newMinimumEvolution = enemy.evolution_factor * world.minimumDevolutionPercentage
+    if newMinimumEvolution > world.stats["minimumEvolution"] then
+        world.stats["minimumEvolution"] = newMinimumEvolution
+    end
+    if evo < world.stats["minimumEvolution"] then
+        evo = world.stats["minimumEvolution"]
+    end
+    enemy.evolution_factor = evo
 
     if world.displayEvolutionMsg and ((event.tick % world.displayEvolutionMsgInterval) == 0) then
         printEvolutionMsg()
