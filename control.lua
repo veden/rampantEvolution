@@ -342,9 +342,9 @@ local function onProcessing(event)
     local evo = processKill(
         processPollution(
             enemy.evolution_factor,
-            1000
+            2000
         ),
-        1000
+        2000
     )
     if (event.tick % 60) == 0 then
         world.killDeltas["time"] = (world.killDeltas["time"] or 0) + 1

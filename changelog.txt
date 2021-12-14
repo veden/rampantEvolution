@@ -3,6 +3,8 @@ Version: 1.2.0
 Date: 16. 4. 2021
   Improvements:
     - Added a minimum evolution setting based off of the peak evolution reached
+  Tweaks:
+    - Doubled processing speed with a slightly lower accuracy historical reconstruction of evolution
   Bugfixes:
     - Historical ticks not being included in recalculating evolution
 
