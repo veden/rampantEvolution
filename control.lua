@@ -4,7 +4,7 @@
 
 -- constants
 
-local settingToPercent = 1/10000000
+local settingToPercent = 1e-7
 
 -- imported functions
 
