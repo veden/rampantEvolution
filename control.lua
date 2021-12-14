@@ -98,7 +98,6 @@ local function reset()
     world.killDeltas = {
         ["time"] = math.floor(game.tick / 60)
     }
-    world.killDeltas = {}
     world.pollutionConsumed = {}
     world.pollutionProduced = {}
     world.pollutionDeltas = {}
@@ -162,14 +161,14 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    if not world.version or world.version < 3 then
-        world.version = 3
+    if not world.version or world.version < 4 then
+        world.version = 4
 
         reset()
 
         onModSettingsChange()
 
-        game.print("Rampant Evolution - Version 1.1.0")
+        game.print("Rampant Evolution - Version 1.2.0")
     end
 end
 
