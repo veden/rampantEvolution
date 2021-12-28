@@ -195,8 +195,8 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    if not world.version or world.version < 4 then
-        world.version = 4
+    if not world.version or world.version < 5 then
+        world.version = 5
 
         reset()
 
