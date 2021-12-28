@@ -137,6 +137,8 @@ local function onModSettingsChange(event)
 
     world.minimumDevolutionPercentage = settings.global["rampant-evolution--minimumDevolutionPercentage"].value
 
+    world.evolutionResolutionLevel = settings.global["rampant-evolution--evolutionResolutionLevel"].value
+
     if settings.global["rampant-evolution--setMapSettingsToZero"].value then
         game.map_settings.enemy_evolution.enabled = false
     else
@@ -342,9 +344,9 @@ local function onProcessing(event)
     local evo = processKill(
         processPollution(
             enemy.evolution_factor,
-            2000
+            world.evolutionResolutionLevel
         ),
-        2000
+        world.evolutionResolutionLevel
     )
     if (event.tick % 60) == 0 then
         world.killDeltas["time"] = (world.killDeltas["time"] or 0) + 1
