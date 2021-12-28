@@ -409,9 +409,9 @@ end
 
 -- hooks
 
-script.on_nth_tick((2.5*60*60)+0, onStatsGrabPollution)
-script.on_nth_tick((2.5*60*60)+1, onStatsGrabKill)
-script.on_nth_tick((2.5*60*60)+2, onStatsGrabTotalPollution)
+script.on_nth_tick((2*60*60)+0, onStatsGrabPollution)
+script.on_nth_tick((2*60*60)+1, onStatsGrabKill)
+script.on_nth_tick((2*60*60)+2, onStatsGrabTotalPollution)
 script.on_event(defines.events.on_tick, onProcessing)
 
 script.on_init(onInit)

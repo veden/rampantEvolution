@@ -5,6 +5,7 @@ Date: 27. 12. 2021
     - Added mod setting to control evolution calculation accuracy
   Tweaks:
     - Added some additional information around the console command /rampantEvolution
+    - Increased frequency to every 2 minutes for stats grabbed from factorio engine for computing deltas
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.2.0
