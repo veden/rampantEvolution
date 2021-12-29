@@ -122,7 +122,7 @@ data:extend({
             minimum_value = -100000,
             maximum_value = 100000,
             default_value = 0,
-            order = "l[modifier]-m[unit]",
+            order = "l[modifier]-mx[unit]",
             per_user = false
         },
 
