@@ -49,12 +49,17 @@ local function isValidSpawnerConsumer(name)
     return sFind(name, "spawner")
 end
 
+local function isValidWorm(name)
+    return sFind(name, "worm")
+end
+
 local function isValidHiveConsumer(name)
-    return sFind(name, "hive") or sFind(name, "utility")
+    return sFind(name, "hive") -- or sFind(name, "utility")
 end
 
 local function isValidUnit(name)
-    return not (isValidSpawnerConsumer(name) or isValidHiveConsumer(name)) and (sFind(name, "biter") or sFind(name, "spitter"))
+    return not (isValidSpawnerConsumer(name) or isValidHiveConsumer(name) or isValidWorm(name))
+        and (sFind(name, "biter") or sFind(name, "spitter"))
 end
 
 local function onStatsGrabPollution()
@@ -138,6 +143,7 @@ local function reset()
         ["spawner"] = 0,
         ["hive"] = 0,
         ["unit"] = 0,
+        ["worm"] = 0,
         ["totalPollution"] = 0,
         ["time"] = 0,
         ["minimumEvolution"] = 0
@@ -157,6 +163,7 @@ local function onModSettingsChange(event)
     world.evolutionPerSpawnerKilled = settings.global["rampant-evolution-evolutionPerSpawnerKilled"].value * settingToPercent
     world.evolutionPerUnitKilled = settings.global["rampant-evolution-evolutionPerUnitKilled"].value * settingToPercent
     world.evolutionPerHiveKilled = settings.global["rampant-evolution-evolutionPerHiveKilled"].value * settingToPercent
+    world.evolutionPerWormKilled = settings.global["rampant-evolution--evolutionPerWormKilled"].value * settingToPercent
 
     world.evolutionPerTime = settings.global["rampant-evolution--evolutionPerTime"].value * settingToPercent
     world.evolutionPerPollution = settings.global["rampant-evolution--evolutionPerPollution"].value * settingToPercent
@@ -252,6 +259,15 @@ local function processKill(evo, initialRunsRemaining)
                 local contribution = ((1 - evo)^2) * world.evolutionPerHiveKilled
                 evo = evo + contribution
                 stats["hive"] = stats["hive"] + contribution
+            end
+        end
+    elseif isValidWorm(name) then
+        if world.evolutionPerWormKilled ~= 0 then
+            while (runsRemaining > 0) do
+                runsRemaining = runsRemaining - 1
+                local contribution = ((1 - evo)^2) * world.evolutionPerWormKilled
+                evo = evo + contribution
+                stats["worm"] = stats["worm"] + contribution
             end
         end
     elseif isValidUnit(name) then
@@ -362,6 +378,7 @@ local function printEvolutionMsg()
             roundTo(stats["spawner"]*100, 0.01),
             roundTo(stats["hive"]*100, 0.01),
             roundTo(stats["unit"]*100, 0.01),
+            roundTo(stats["worm"]*100, 0.01),
             roundTo(stats["totalPollution"]*100, 0.01),
             roundTo(stats["time"]*100, 0.01),
             roundTo(stats["minimumEvolution"]*100, 0.01)

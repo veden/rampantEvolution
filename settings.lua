@@ -117,6 +117,17 @@ data:extend({
 
         {
             type = "double-setting",
+            name = "rampant-evolution--evolutionPerWormKilled",
+            setting_type = "runtime-global",
+            minimum_value = -100000,
+            maximum_value = 100000,
+            default_value = 0,
+            order = "l[modifier]-m[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
             name = "rampant-evolution-evolutionPerHiveKilled",
             setting_type = "runtime-global",
             minimum_value = -100000,
