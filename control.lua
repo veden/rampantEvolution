@@ -3,32 +3,32 @@
 -- local constants = require("libs/Constants")
 
 --[[
-Vanilla factors
-time_factor
-:: double
-The amount evolution naturally progresses by every second. Defaults to 0.000004.
+    Vanilla factors
+    time_factor
+    :: double
+    The amount evolution naturally progresses by every second. Defaults to 0.000004.
 
-destroy_factor
-:: double
-The amount evolution progresses for every destroyed spawner. Defaults to 0.002.
+    destroy_factor
+    :: double
+    The amount evolution progresses for every destroyed spawner. Defaults to 0.002.
 
-pollution_factor
-:: double
-The amount evolution progresses for every unit of pollution. Defaults to 0.0000009.
+    pollution_factor
+    :: double
+    The amount evolution progresses for every unit of pollution. Defaults to 0.0000009.
 
 
-Pollution production is the total pollution produced by buildings per tick, not the
-pollution spreading on the map, so it is not reduced by trees or other absorbers.
-e.g. : 10 boilers produce 300 pollution in one minute, raising the evolution factor
-by around 0.027%.
+    Pollution production is the total pollution produced by buildings per tick, not the
+    pollution spreading on the map, so it is not reduced by trees or other absorbers.
+    e.g. : 10 boilers produce 300 pollution in one minute, raising the evolution factor
+    by around 0.027%.
 
-The percentages are applied on the base of (1 - current_evolution_factor)². So
-for instance destroying enemy spawners in the beginning of the game results in
-increase of evolution factor by 0.002 (0.2%) while doing this when the evolution
-factor is 0.5 the increase is only 0.0005 (0.05%).
+    The percentages are applied on the base of (1 - current_evolution_factor)². So
+    for instance destroying enemy spawners in the beginning of the game results in
+    increase of evolution factor by 0.002 (0.2%) while doing this when the evolution
+    factor is 0.5 the increase is only 0.0005 (0.05%).
 
-This also means that the evolution factor approaches 1 asymptotically - generally,
-increases past 0.9 or so are very slow and the number never actually reaches 1.0.
+    This also means that the evolution factor approaches 1 asymptotically - generally,
+    increases past 0.9 or so are very slow and the number never actually reaches 1.0.
 --]]
 
 -- constants
@@ -68,9 +68,9 @@ local function onStatsGrabPollution()
 
     for name,count in pairs(counts) do
         local previousCount = world.pollutionConsumed[name]
+        world.pollutionConsumed[name] = count
         local delta
         if not previousCount then
-            world.pollutionConsumed[name] = count
             delta = count
         else
             delta = count - previousCount
@@ -89,9 +89,9 @@ local function onStatsGrabTotalPollution()
 
         for name,count in pairs(counts) do
             local previousCount = world.pollutionProduced[name]
+            world.pollutionProduced[name] = count
             local delta
             if not previousCount then
-                world.pollutionProduced[name] = count
                 delta = count
             else
                 delta = count - previousCount
@@ -111,9 +111,9 @@ local function onStatsGrabKill()
 
     for name,count in pairs(counts) do
         local previousCount = world.kills[name]
+        world.kills[name] = count
         local delta
         if not previousCount then
-            world.kills[name] = count
             delta = count
         else
             delta = count - previousCount

@@ -7,6 +7,8 @@ Date: 27. 12. 2021
   Tweaks:
     - Added some additional information around the console command /rampantEvolution
     - Increased frequency to every 2 minutes for stats grabbed from factorio engine for computing deltas
+  Bugfixes:
+    - Fixed totalCounts were only set when previousCount didn't exist, which caused over time evolution to spiral as the deltas kept on growing (Thanks garrotte13)
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.2.0
