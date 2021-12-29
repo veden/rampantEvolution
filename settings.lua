@@ -22,8 +22,8 @@ data:extend({
             type = "int-setting",
             name = "rampant-evolution--evolutionResolutionLevel",
             setting_type = "runtime-global",
-            minimum_value = 1,
-            default_value = 1000,
+            minimum_value = 0,
+            default_value = 0,
             maximum_value = 100000,
             order = "l[modifier]-m[unit]",
             per_user = false

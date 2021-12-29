@@ -38,6 +38,7 @@ local settingToPercent = 1e-7
 -- imported functions
 
 local sFind = string.find
+local mMin = math.min
 
 -- local references
 
@@ -385,14 +386,27 @@ local function printEvolutionMsg()
     })
 end
 
+local function linearInterpolation(percent, min, max)
+    return ((max - min) * percent) + min
+end
+
 local function onProcessing(event)
     local enemy = game.forces.enemy
+    local resolutionLevel = world.evolutionResolutionLevel
+    if resolutionLevel == 0 then
+        local x = event.tick / 17280000 -- (60 * 60 * 60 * 80)
+        resolutionLevel = linearInterpolation(
+            mMin(x, 1),
+            20,
+            4000
+        )
+    end
     local evo = processKill(
         processPollution(
             enemy.evolution_factor,
-            world.evolutionResolutionLevel
+            resolutionLevel
         ),
-        world.evolutionResolutionLevel
+        resolutionLevel
     )
     if (event.tick % 60) == 0 then
         world.killDeltas["time"] = (world.killDeltas["time"] or 0) + 1
