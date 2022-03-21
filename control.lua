@@ -1,6 +1,6 @@
 -- imports
 
--- local constants = require("libs/Constants")
+local gui = require("libs/Gui")
 
 --[[
     Vanilla factors
@@ -33,12 +33,16 @@
 
 -- constants
 
-local settingToPercent = 1e-7
+local SETTINGS_TO_PERCENT = 1e-7
+local SHORT_EVOLUTION_CHECK_DURATION = 5 * 60 * 60
+local LONG_EVOLUTION_CHECK_DURATION = 30 * 60 * 60
+local LONG_LONG_EVOLUTION_CHECK_DURATION = 60 * 60 * 60
 
 -- imported functions
 
 local sFind = string.find
 local mMin = math.min
+local roundTo = gui.roundTo
 
 -- local references
 
@@ -157,17 +161,17 @@ local function onModSettingsChange(event)
         return false
     end
 
-    world.evolutionPerSpawnerAbsorbed = settings.global["rampant-evolution-evolutionPerSpawnerAbsorbed"].value * settingToPercent
-    world.evolutionPerTreeAbsorbed = settings.global["rampant-evolution-evolutionPerTreeAbsorbed"].value * settingToPercent
-    world.evolutionPerTreeDied = settings.global["rampant-evolution-evolutionPerTreeDied"].value * settingToPercent
-    world.evolutionPerTileAbsorbed = settings.global["rampant-evolution-evolutionPerTileAbsorbed"].value * settingToPercent
-    world.evolutionPerSpawnerKilled = settings.global["rampant-evolution-evolutionPerSpawnerKilled"].value * settingToPercent
-    world.evolutionPerUnitKilled = settings.global["rampant-evolution-evolutionPerUnitKilled"].value * settingToPercent
-    world.evolutionPerHiveKilled = settings.global["rampant-evolution-evolutionPerHiveKilled"].value * settingToPercent
-    world.evolutionPerWormKilled = settings.global["rampant-evolution--evolutionPerWormKilled"].value * settingToPercent
+    world.evolutionPerSpawnerAbsorbed = settings.global["rampant-evolution-evolutionPerSpawnerAbsorbed"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerTreeAbsorbed = settings.global["rampant-evolution-evolutionPerTreeAbsorbed"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerTreeDied = settings.global["rampant-evolution-evolutionPerTreeDied"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerTileAbsorbed = settings.global["rampant-evolution-evolutionPerTileAbsorbed"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerSpawnerKilled = settings.global["rampant-evolution-evolutionPerSpawnerKilled"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerUnitKilled = settings.global["rampant-evolution-evolutionPerUnitKilled"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerHiveKilled = settings.global["rampant-evolution-evolutionPerHiveKilled"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerWormKilled = settings.global["rampant-evolution--evolutionPerWormKilled"].value * SETTINGS_TO_PERCENT
 
-    world.evolutionPerTime = settings.global["rampant-evolution--evolutionPerTime"].value * settingToPercent
-    world.evolutionPerPollution = settings.global["rampant-evolution--evolutionPerPollution"].value * settingToPercent
+    world.evolutionPerTime = settings.global["rampant-evolution--evolutionPerTime"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerPollution = settings.global["rampant-evolution--evolutionPerPollution"].value * SETTINGS_TO_PERCENT
 
     world.displayEvolutionMsg = settings.global["rampant-evolution--displayEvolutionMsg"].value
     world.displayEvolutionMsgInterval = math.ceil(settings.global["rampant-evolution--displayEvolutionMsgInterval"].value * (60 * 60))
@@ -203,14 +207,28 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    if not world.version or world.version < 5 then
-        world.version = 5
+    if not world.version or world.version < 6 then
+        world.version = 6
 
         reset()
 
         onModSettingsChange()
 
-        game.print("Rampant Evolution - Version 1.3.0")
+        world.playerGuiOpen = {}
+        world.playerIterator = nil
+        world.playerGuiTick = {}
+
+        world.lastChangeShortTick = 0
+        world.lastChangeShortEvolution = 0
+        world.lastChangeShort = 0
+        world.lastChangeLongTick = 0
+        world.lastChangeLongEvolution = 0
+        world.lastChangeLong = 0
+        world.lastChangeLongLongTick = 0
+        world.lastChangeLongLongEvolution = 0
+        world.lastChangeLongLong = 0
+
+        game.print("Rampant Evolution - Version 1.4.0")
     end
 end
 
@@ -362,27 +380,26 @@ local function processPollution(evo, initialRunsRemaining)
     return evo
 end
 
-local function roundTo(x, multipler)
-    return math.floor(x / multipler) * multipler
-end
-
 local function printEvolutionMsg()
     local enemy = game.forces.enemy
     local stats = world.stats
     game.print({
             "description.rampant-evolution--displayEvolutionMsg",
-            roundTo(enemy.evolution_factor*100,0.01),
-            roundTo(stats["tile"]*100, 0.01),
-            roundTo(stats["tree"]*100, 0.01),
-            roundTo(stats["dyingTree"]*100, 0.01),
-            roundTo(stats["absorbed"]*100, 0.01),
-            roundTo(stats["spawner"]*100, 0.01),
-            roundTo(stats["hive"]*100, 0.01),
-            roundTo(stats["unit"]*100, 0.01),
-            roundTo(stats["worm"]*100, 0.01),
-            roundTo(stats["totalPollution"]*100, 0.01),
-            roundTo(stats["time"]*100, 0.01),
-            roundTo(stats["minimumEvolution"]*100, 0.01)
+            roundTo(enemy.evolution_factor*100,0.001),
+            roundTo(stats["tile"]*100, 0.001),
+            roundTo(stats["tree"]*100, 0.001),
+            roundTo(stats["dyingTree"]*100, 0.001),
+            roundTo(stats["absorbed"]*100, 0.001),
+            roundTo(stats["spawner"]*100, 0.001),
+            roundTo(stats["hive"]*100, 0.001),
+            roundTo(stats["unit"]*100, 0.001),
+            roundTo(stats["worm"]*100, 0.001),
+            roundTo(stats["totalPollution"]*100, 0.001),
+            roundTo(stats["time"]*100, 0.001),
+            roundTo(stats["minimumEvolution"]*100, 0.001),
+            roundTo(world.lastChangeShort*100, 0.001),
+            roundTo(world.lastChangeLong*100, 0.001),
+            roundTo(world.lastChangeLongLong*100, 0.001)
     })
 end
 
@@ -391,10 +408,11 @@ local function linearInterpolation(percent, min, max)
 end
 
 local function onProcessing(event)
+    local tick = event.tick
     local enemy = game.forces.enemy
     local resolutionLevel = world.evolutionResolutionLevel
     if resolutionLevel == 0 then
-        local x = event.tick / 17280000 -- (60 * 60 * 60 * 80)
+        local x = tick / 17280000 -- (60 * 60 * 60 * 80)
         resolutionLevel = linearInterpolation(
             mMin(x, 1),
             20,
@@ -408,7 +426,7 @@ local function onProcessing(event)
         ),
         resolutionLevel
     )
-    if (event.tick % 60) == 0 then
+    if (tick % 60) == 0 then
         world.killDeltas["time"] = (world.killDeltas["time"] or 0) + 1
     end
 
@@ -421,8 +439,34 @@ local function onProcessing(event)
     end
     enemy.evolution_factor = evo
 
-    if world.displayEvolutionMsg and ((event.tick % world.displayEvolutionMsgInterval) == 0) then
+    if (tick - world.lastChangeShortTick) >= SHORT_EVOLUTION_CHECK_DURATION then
+        world.lastChangeShortTick = tick
+        world.lastChangeShort = evo - world.lastChangeShortEvolution
+        world.lastChangeShortEvolution = evo
+    end
+
+    if (tick - world.lastChangeLongTick) >= LONG_EVOLUTION_CHECK_DURATION then
+        world.lastChangeLongTick = tick
+        world.lastChangeLong = evo - world.lastChangeLongEvolution
+        world.lastChangeLongEvolution = evo
+    end
+
+    if (tick - world.lastChangeLongLongTick) >= LONG_LONG_EVOLUTION_CHECK_DURATION then
+        world.lastChangeLongLongTick = tick
+        world.lastChangeLongLong = evo - world.lastChangeLongEvolution
+        world.lastChangeLongLongEvolution = evo
+    end
+
+    if world.displayEvolutionMsg and ((tick % world.displayEvolutionMsgInterval) == 0) then
         printEvolutionMsg()
+    end
+
+    local playerId = world.playerIterator
+    if not playerId then
+        world.playerIterator = next(game.connected_players, world.playerIterator)
+    else
+        world.playerIterator = next(game.connected_players, playerId)
+        gui.update(world, playerId, tick)
     end
 end
 
@@ -438,8 +482,23 @@ local function onLoad()
     world = global.world
 end
 
+local function onLuaShortcut(event)
+    if event.prototype_name == "rampant-evolution--info" then
+        local playerIndex = event.player_index
+        local guiPanel = world.playerGuiOpen[playerIndex]
+        if not guiPanel then
+            world.playerGuiOpen[playerIndex] = gui.create(game.players[playerIndex], world)
+        else
+            gui.close(world, event.player_index)
+            world.playerGuiOpen[playerIndex] = nil
+            world.playerGuiTick[playerIndex] = 0
+        end
+    end
+end
+
 -- hooks
 
+script.on_event(defines.events.on_lua_shortcut, onLuaShortcut)
 script.on_nth_tick((2*60*60)+0, onStatsGrabPollution)
 script.on_nth_tick((2*60*60)+1, onStatsGrabKill)
 script.on_nth_tick((2*60*60)+2, onStatsGrabTotalPollution)

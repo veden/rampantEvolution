@@ -11,6 +11,15 @@ data:extend({
 
         {
             type = "bool-setting",
+            name = "rampant-evolution--shortcut-bar",
+            setting_type = "startup",
+            default_value = true,
+            order = "a[modifier]-b[unit]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
             name = "rampant-evolution--setMapSettingsToZero",
             setting_type = "runtime-global",
             default_value = false,
