@@ -1,3 +1,17 @@
+;; Copyright (C) 2022  veden
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 (require file/zip)
   (require json)
@@ -30,11 +44,10 @@
          ;; (string->path "data-updates.lua")
          (string->path "data-final-fixes.lua")
          (string->path "changelog.txt")
-         (string->path "LICENSE.md")
+         (string->path "COPYING")
          (string->path "settings.lua")
          (string->path "README.md")
-         (string->path "NOTICE-rkt")
-         (string->path "NOTICE-lua")
+         (string->path "NOTICE")
          (string->path "libs")
          ;; (string->path "migrations")
          (string->path "locale")
@@ -68,13 +81,12 @@
       ;; (copyFile "data.lua" modFolder)
       (copyFile "data-final-fixes.lua" modFolder)
       ;; (copyFile "data-updates.lua" modFolder)
-      (copyFile "LICENSE.md" modFolder)
+      (copyFile "COPYING" modFolder)
       (copyFile "thumbnail.png" modFolder)
       (copyFile "changelog.txt" modFolder)
       (copyFile "settings.lua" modFolder)
       ;; (copyFile "NOTICE" modFolder)
-      (copyFile "NOTICE-rkt" modFolder)
-      (copyFile "NOTICE-lua" modFolder)
+      (copyFile "NOTICE" modFolder)
       (copyDirectory "libs" modFolder)
       ;; (copyDirectory "migrations" modFolder)
       (copyDirectory "locale" modFolder)
