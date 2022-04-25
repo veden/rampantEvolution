@@ -220,7 +220,7 @@ function gui.create(player, world)
             tooltip = {"tooltip.rampant-evolution--longChange"}
     })
 
-  contents.add({
+    contents.add({
             type = "label",
             caption = {"description.rampant-evolution--longLongChange"},
             tooltip = {"tooltip.rampant-evolution--longLongChange"}

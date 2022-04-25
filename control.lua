@@ -469,7 +469,7 @@ local function onProcessing(event)
 
     if (tick - world.lastChangeLongLongTick) >= LONG_LONG_EVOLUTION_CHECK_DURATION then
         world.lastChangeLongLongTick = tick
-        world.lastChangeLongLong = evo - world.lastChangeLongEvolution
+        world.lastChangeLongLong = evo - world.lastChangeLongLongEvolution
         world.lastChangeLongLongEvolution = evo
     end
 
