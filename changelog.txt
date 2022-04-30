@@ -2,6 +2,7 @@
 Version: 1.4.1
   Bugfixes:
     - Fixed 60 minute evolution change counter
+    - Fixed invalid key to next due to player leaving game
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.4.0
