@@ -33,6 +33,12 @@ function gui.roundTo(x, multipler)
 end
 
 function gui.create(player, world)
+    local guis = player.gui.screen.children
+    for i=1,#guis do
+        if guis[i].name == "rampant-evolution--metrics" then
+            return guis[i]
+        end
+    end
     local panel = player.gui.screen.add({
             type="frame",
             name="rampant-evolution--metrics",

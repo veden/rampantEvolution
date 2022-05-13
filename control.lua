@@ -223,8 +223,8 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    if not world.version or world.version < 6 then
-        world.version = 6
+    if not world.version or world.version < 7 then
+        world.version = 7
 
         reset()
 
@@ -244,7 +244,7 @@ local function onConfigChanged()
         world.lastChangeLongLongEvolution = 0
         world.lastChangeLongLong = 0
 
-        game.print("Rampant Evolution - Version 1.4.0")
+        game.print("Rampant Evolution - Version 1.4.2")
     end
 end
 
