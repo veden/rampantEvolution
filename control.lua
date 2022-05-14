@@ -231,7 +231,6 @@ local function onConfigChanged()
         onModSettingsChange()
 
         world.playerGuiOpen = {}
-        world.playerIterator = nil
         world.playerGuiTick = {}
 
         world.lastChangeShortTick = 0
@@ -243,6 +242,11 @@ local function onConfigChanged()
         world.lastChangeLongLongTick = 0
         world.lastChangeLongLongEvolution = 0
         world.lastChangeLongLong = 0
+    end
+    if not world.version or world.version < 8 then
+        world.version = 8
+
+        world.playerIterator = nil
 
         game.print("Rampant Evolution - Version 1.4.2")
     end
@@ -513,9 +517,7 @@ local function onLuaShortcut(event)
 end
 
 local function onPlayerRemoved(event)
-    if event.player_index == world.playerIterator then
-        world.playerIterator = nil
-    end
+    world.playerIterator = nil
 end
 
 -- hooks
@@ -524,6 +526,7 @@ script.on_event(
     {
         defines.events.on_player_left_game,
         defines.events.on_player_kicked,
+        defines.events.on_player_removed,
         defines.events.on_player_banned
     },
     onPlayerRemoved)
