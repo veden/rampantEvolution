@@ -66,20 +66,20 @@ local world
 
 -- module code
 
-local function isValidSpawnerConsumer(name)
-    return sFind(name, "-spawner")
+local function getSpawnerMultipler(name)
+    return world.spawnerLookup[name]
 end
 
-local function isValidWorm(name)
-    return sFind(name, "-worm")
+local function getWormMultipler(name)
+    return world.wormLookup[name]
 end
 
-local function isValidHiveConsumer(name)
-    return sFind(name, "-hive")
+local function getHiveMultipler(name)
+    return world.hiveLookup[name]
 end
 
-local function isValidUnit(name)
-    return sFind(name, "biter") or sFind(name, "spitter")
+local function getUnitMultipler(name)
+    return world.unitLookup[name]
 end
 
 local function onStatsGrabPollution()
@@ -195,6 +195,23 @@ local function onModSettingsChange(event)
 
     world.evolutionResolutionLevel = settings.global["rampant-evolution--evolutionResolutionLevel"].value
 
+    world.spawnerLookup = {}
+    world.hiveLookup = {}
+    world.wormLookup = {}
+    world.unitLookup = {}
+
+    for entityName, entityPrototype in pairs(game.entity_prototypes) do
+        if (entityPrototype.type == "unit-spawner") and sFind(entityName, "-spawner") then
+            world.spawnerLookup[entityName] = 1
+        elseif (entityPrototype.type == "unit-spawner") and sFind(entityName, "-hive") then
+            world.hiveLookup[entityName] = 1
+        elseif (entityPrototype.type == "turret") and sFind(entityName, "-worm") then
+            world.wormLookup[entityName] = 1
+        elseif (entityPrototype.type == "unit") and (sFind(entityName, "biter") or sFind(entityName, "spitter")) then
+            world.unitLookup[entityName] = 1
+        end
+    end
+
     if settings.global["rampant-evolution--setMapSettingsToZero"].value then
         game.map_settings.enemy_evolution.enabled = false
     else
@@ -227,8 +244,6 @@ local function onConfigChanged()
 
         reset()
 
-        onModSettingsChange()
-
         world.playerGuiOpen = {}
         world.playerGuiTick = {}
 
@@ -242,12 +257,14 @@ local function onConfigChanged()
         world.lastChangeLongLongEvolution = 0
         world.lastChangeLongLong = 0
     end
-    if not world.version or world.version < 8 then
-        world.version = 8
+    if world.version < 9 then
+        world.version = 9
 
         world.playerIterator = nil
 
-        game.print("Rampant Evolution - Version 1.4.2")
+        onModSettingsChange()
+
+        game.print("Rampant Evolution - Version 1.5.0")
     end
 end
 
@@ -281,7 +298,7 @@ local function processKill(evo, initialRunsRemaining)
                 stats["time"] = stats["time"] + contribution
             end
         end
-    elseif isValidSpawnerConsumer(name) then
+    elseif getSpawnerMultipler(name) then
         if world.evolutionPerSpawnerKilled ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
@@ -290,7 +307,7 @@ local function processKill(evo, initialRunsRemaining)
                 stats["spawner"] = stats["spawner"] + contribution
             end
         end
-    elseif isValidHiveConsumer(name) then
+    elseif getHiveMultipler(name) then
         if world.evolutionPerHiveKilled ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
@@ -299,7 +316,7 @@ local function processKill(evo, initialRunsRemaining)
                 stats["hive"] = stats["hive"] + contribution
             end
         end
-    elseif isValidWorm(name) then
+    elseif getWormMultipler(name) then
         if world.evolutionPerWormKilled ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
@@ -308,7 +325,7 @@ local function processKill(evo, initialRunsRemaining)
                 stats["worm"] = stats["worm"] + contribution
             end
         end
-    elseif isValidUnit(name) then
+    elseif getUnitMultipler(name) then
         if world.evolutionPerUnitKilled ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
@@ -382,7 +399,7 @@ local function processPollution(evo, initialRunsRemaining)
                 stats["totalPollution"] = stats["totalPollution"] + contribution
             end
         end
-    elseif isValidSpawnerConsumer(name) then
+    elseif getSpawnerMultipler(name) then
         if world.evolutionPerSpawnerAbsorbed ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1

@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
-Version: 1.4.3
+Version: 1.5.0
   Tweaks:
     - Reduced spawner kills default mod setting for evolution contribution to 300
     - Switched pause vanilla evolution factor mod setting to be enabled by default
