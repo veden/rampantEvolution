@@ -135,7 +135,7 @@ data:extend({
             setting_type = "runtime-global",
             minimum_value = -100000,
             maximum_value = 100000,
-            default_value = 1000,
+            default_value = 300,
             order = "l[modifier]-m[unit]",
             per_user = false
         },

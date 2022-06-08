@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.4.3
+  Tweaks:
+    - Reduced spawner kills default mod setting for evolution contribution to 300
   Bugfixes:
     - Fixed spawner faction units being counted as unit spawner kills (Thanks drayath)
 
