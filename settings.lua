@@ -38,7 +38,7 @@ data:extend({
             type = "bool-setting",
             name = "rampant-evolution--setMapSettingsToZero",
             setting_type = "runtime-global",
-            default_value = false,
+            default_value = true,
             order = "l[modifier]-m[unit]",
             per_user = false
         },
