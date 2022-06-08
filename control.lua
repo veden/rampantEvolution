@@ -67,20 +67,19 @@ local world
 -- module code
 
 local function isValidSpawnerConsumer(name)
-    return sFind(name, "spawner")
+    return sFind(name, "-spawner")
 end
 
 local function isValidWorm(name)
-    return sFind(name, "worm")
+    return sFind(name, "-worm")
 end
 
 local function isValidHiveConsumer(name)
-    return sFind(name, "hive") -- or sFind(name, "utility")
+    return sFind(name, "-hive")
 end
 
 local function isValidUnit(name)
-    return not (isValidSpawnerConsumer(name) or isValidHiveConsumer(name) or isValidWorm(name))
-        and (sFind(name, "biter") or sFind(name, "spitter"))
+    return sFind(name, "biter") or sFind(name, "spitter")
 end
 
 local function onStatsGrabPollution()
