@@ -204,6 +204,18 @@ function gui.create(player, world)
         })
     end
 
+    if world.enabledResearchEvolutionCap then
+        contents.add({
+                type = "label",
+                name = "ResearchEvolutionCapLabel",
+                caption = {"description.rampant-evolution--researchEvolutionCap"}
+        })
+        contents.add({
+                type = "label",
+                name = "ResearchEvolutionCap"
+        })
+    end
+
     contents.add({
             type = "label",
             caption = {"description.rampant-evolution--shortChange"},
@@ -246,6 +258,7 @@ function gui.close(world, playerIndex)
     if guiPanel then
         guiPanel.destroy()
         world.playerGuiOpen[playerIndex] = nil
+        world.playerGuiTick[playerIndex] = nil
     end
 end
 
@@ -320,6 +333,18 @@ function gui.update(world, playerId, tick)
         if contentTable.MinimumEvolutionValue then
             contentTable.MinimumEvolutionValue.caption =
                 tostring(gui.roundTo(stats["minimumEvolution"]*100, 0.001)).."%"
+        end
+
+        if contentTable.ResearchEvolutionCap then
+            contentTable.ResearchEvolutionCap.caption =
+                tostring(gui.roundTo(stats["researchEvolutionCap"]*100, 0.001)).."%"
+            local tooltip = {"tooltip.rampant-evolution--researchEvolutionCap"}
+            for i=1,7 do
+                tooltip[#tooltip+1] = gui.roundTo(world.researchCurrent[i]*100, 0.001) or 0
+                tooltip[#tooltip+1] = gui.roundTo(world.researchTotals[i]*100, 0.001)
+            end
+            contentTable.ResearchEvolutionCap.tooltip = tooltip
+            contentTable.ResearchEvolutionCapLabel.tooltip = tooltip
         end
 
         contentTable.ShortChangeValue.caption =

@@ -1,10 +1,14 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.0
+  Improvements:
+    - Added evolution cap based on research
   Tweaks:
     - Reduced spawner kills default mod setting for evolution contribution to 300
     - Switched pause vanilla evolution factor mod setting to be enabled by default
   Bugfixes:
     - Fixed spawner faction units being counted as unit spawner kills (Thanks drayath)
+    - Fixed tooltip on gui shortcut toggle
+    - Fixed evolution gui not refreshing immediately after changing mod settings
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.4.2

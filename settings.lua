@@ -193,5 +193,100 @@ data:extend({
             default_value = 0,
             order = "l[modifier]-mz[unit]",
             per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant-evolution--researchEvolutionCap",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant-evolution--researchEvolutionCapIncludeUpgrades",
+            setting_type = "runtime-global",
+            default_value = true,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--technology-automation-science-multipler",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--technology-logistic-science-multipler",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--technology-military-science-multipler",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--technology-chemical-science-multipler",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--technology-production-science-multipler",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--technology-utility-science-multipler",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-mz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--technology-space-science-multipler",
+            setting_type = "runtime-global",
+            minimum_value = 0,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-mzz[unit]",
+            per_user = false
         }
 })

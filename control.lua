@@ -166,7 +166,8 @@ local function reset()
         ["worm"] = 0,
         ["totalPollution"] = 0,
         ["time"] = 0,
-        ["minimumEvolution"] = 0
+        ["minimumEvolution"] = 0,
+        ["researchEvolutionCap"] = 0
     }
 end
 
@@ -200,6 +201,12 @@ local function onModSettingsChange(event)
     world.wormLookup = {}
     world.unitLookup = {}
 
+    if settings.global["rampant-evolution--recalculateAllEvolution"].value then
+        reset()
+        game.forces.enemy.evolution_factor = 0
+        game.print({"description.rampant-evolution--refreshingEvolution"})
+    end
+
     for entityName, entityPrototype in pairs(game.entity_prototypes) do
         if (entityPrototype.type == "unit-spawner") and sFind(entityName, "-spawner") then
             world.spawnerLookup[entityName] = 1
@@ -212,16 +219,92 @@ local function onModSettingsChange(event)
         end
     end
 
+    world.enabledResearchEvolutionCap = settings.global["rampant-evolution--researchEvolutionCap"].value
+    if world.enabledResearchEvolutionCap then
+        world.researchLookup = {}
+        world.researchTotals = {}
+        world.researchCurrent = {}
+
+        local sciencePackWeightLookup = {
+            [1] = settings.global["rampant-evolution--technology-automation-science-multipler"].value,
+            [2] = settings.global["rampant-evolution--technology-logistic-science-multipler"].value,
+            [3] = settings.global["rampant-evolution--technology-military-science-multipler"].value,
+            [4] = settings.global["rampant-evolution--technology-chemical-science-multipler"].value,
+            [5] = settings.global["rampant-evolution--technology-production-science-multipler"].value,
+            [6] = settings.global["rampant-evolution--technology-utility-science-multipler"].value,
+            [7] = settings.global["rampant-evolution--technology-space-science-multipler"].value
+        }
+        local sciencePackOrder = {
+            "automation-science-pack",
+            "logistic-science-pack",
+            "military-science-pack",
+            "chemical-science-pack",
+            "production-science-pack",
+            "utility-science-pack",
+            "space-science-pack"
+        }
+        local sciencePackOrderLookup = {}
+        for index, science in pairs(sciencePackOrder) do
+            sciencePackOrderLookup[science] = index
+            world.researchTotals[index] = 0
+            world.researchCurrent[index] = 0
+        end
+
+        local totalTechnology = 0
+        local includeUpgrades = settings.global["rampant-evolution--researchEvolutionCapIncludeUpgrades"].value
+
+        for technologyName, technologyPrototype in pairs(game.technology_prototypes) do
+            local highestOrder = -1
+
+            if not technologyPrototype.research_unit_count_formula
+                and technologyPrototype.enabled
+                and not technologyPrototype.hidden
+                and ((not technologyPrototype.upgrade) or (technologyPrototype.upgrade and includeUpgrades))
+            then
+                for _, ingredient in pairs(technologyPrototype.research_unit_ingredients) do
+                    if sciencePackOrderLookup[ingredient.name] then
+                        if highestOrder < sciencePackOrderLookup[ingredient.name] then
+                            highestOrder = sciencePackOrderLookup[ingredient.name]
+                        end
+                    end
+                end
+                if (highestOrder ~= -1) then
+                    local weight = sciencePackWeightLookup[highestOrder]
+                    totalTechnology = totalTechnology + weight
+                    world.researchTotals[highestOrder] = (world.researchTotals[highestOrder] or 0) + weight
+                    world.researchLookup[technologyName] = {weight, highestOrder}
+                end
+            end
+        end
+
+        for tech, value in pairs(world.researchLookup) do
+            world.researchLookup[tech][1] = value[1] / totalTechnology
+        end
+        for scienceIndex=1,#sciencePackOrder do
+            world.researchTotals[scienceIndex] = world.researchTotals[scienceIndex] / totalTechnology
+        end
+
+        for technologyName, technology in pairs(game.forces.player.technologies) do
+            if technology.researched then
+                local evolutionIncrease = world.researchLookup[technologyName]
+                if evolutionIncrease then
+                    world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
+                    world.stats["researchEvolutionCap"] = world.stats["researchEvolutionCap"] + evolutionIncrease[1]
+                end
+            end
+        end
+    else
+        world.stats["researchEvolutionCap"] = 1
+    end
+
     if settings.global["rampant-evolution--setMapSettingsToZero"].value then
         game.map_settings.enemy_evolution.enabled = false
     else
         game.map_settings.enemy_evolution.enabled = true
     end
 
-    if settings.global["rampant-evolution--recalculateAllEvolution"].value then
-        reset()
-        game.forces.enemy.evolution_factor = 0
-        game.print({"description.rampant-evolution--refreshingEvolution"})
+    for playerIndex in pairs(world.playerGuiTick) do
+        world.playerGuiTick[playerIndex] = nil
     end
 
     onStatsGrabPollution()
@@ -433,6 +516,7 @@ local function printEvolutionMsg()
             roundTo(stats["totalPollution"]*100, 0.001),
             roundTo(stats["time"]*100, 0.001),
             roundTo(stats["minimumEvolution"]*100, 0.001),
+            roundTo(stats["researchEvolutionCap"]*100, 0.001),
             roundTo(world.lastChangeShort*100, 0.001),
             roundTo(world.lastChangeLong*100, 0.001),
             roundTo(world.lastChangeLongLong*100, 0.001)
@@ -472,6 +556,11 @@ local function onProcessing(event)
     end
     if evo < world.stats["minimumEvolution"] then
         evo = world.stats["minimumEvolution"]
+    end
+    if world.enabledResearchEvolutionCap then
+        if evo > world.stats["researchEvolutionCap"] then
+            evo = world.stats["researchEvolutionCap"]
+        end
     end
     enemy.evolution_factor = evo
 
@@ -526,14 +615,34 @@ local function onLuaShortcut(event)
             world.playerGuiOpen[playerIndex] = gui.create(game.players[playerIndex], world)
         else
             gui.close(world, event.player_index)
-            world.playerGuiOpen[playerIndex] = nil
-            world.playerGuiTick[playerIndex] = 0
         end
     end
 end
 
 local function onPlayerRemoved(event)
     world.playerIterator = nil
+end
+
+local function onResearchCompleted(event)
+    if world.enabledResearchEvolutionCap then
+        local technologyName = event.research.name
+        local evolutionIncrease = world.researchLookup[technologyName]
+        if evolutionIncrease then
+            world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
+            world.stats["researchEvolutionCap"] = world.stats["researchEvolutionCap"] + evolutionIncrease[1]
+        end
+    end
+end
+
+local function onResearchUncompleted(event)
+    if world.enabledResearchEvolutionCap then
+        local technologyName = event.research.name
+        local evolutionIncrease = world.researchLookup[technologyName]
+        if evolutionIncrease then
+            world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
+            world.stats["researchEvolutionCap"] = world.stats["researchEvolutionCap"] - evolutionIncrease[1]
+        end
+    end
 end
 
 -- hooks
@@ -551,6 +660,8 @@ script.on_nth_tick((2*60*60)+0, onStatsGrabPollution)
 script.on_nth_tick((2*60*60)+1, onStatsGrabKill)
 script.on_nth_tick((2*60*60)+2, onStatsGrabTotalPollution)
 script.on_event(defines.events.on_tick, onProcessing)
+script.on_event(defines.events.on_research_finished, onResearchCompleted)
+script.on_event(defines.events.on_research_reversed, onResearchUncompleted)
 
 script.on_init(onInit)
 script.on_load(onLoad)
