@@ -191,6 +191,45 @@ function gui.create(player, world)
         })
     end
 
+    if world.evolutionPerLowPlayer ~= 0 then
+        contents.add({
+                type = "label",
+                caption = {"description.rampant-evolution--lowPlayer"},
+                tooltip = {"tooltip.rampant-evolution--lowPlayer"}
+        })
+        contents.add({
+                type = "label",
+                name = "LowPlayer",
+                tooltip = {"tooltip.rampant-evolution--lowPlayer"}
+        })
+    end
+
+    if world.evolutionPerMediumPlayer ~= 0 then
+        contents.add({
+                type = "label",
+                caption = {"description.rampant-evolution--mediumPlayer"},
+                tooltip = {"tooltip.rampant-evolution--mediumPlayer"}
+        })
+        contents.add({
+                type = "label",
+                name = "MediumPlayer",
+                tooltip = {"tooltip.rampant-evolution--mediumPlayer"}
+        })
+    end
+
+    if world.evolutionPerHighPlayer ~= 0 then
+        contents.add({
+                type = "label",
+                caption = {"description.rampant-evolution--highPlayer"},
+                tooltip = {"tooltip.rampant-evolution--highPlayer"}
+        })
+        contents.add({
+                type = "label",
+                name = "HighPlayer",
+                tooltip = {"tooltip.rampant-evolution--highPlayer"}
+        })
+    end
+
     if world.minimumDevolutionPercentage ~= 0 then
         contents.add({
                 type = "label",
@@ -333,6 +372,21 @@ function gui.update(world, playerId, tick)
         if contentTable.MinimumEvolutionValue then
             contentTable.MinimumEvolutionValue.caption =
                 tostring(gui.roundTo(stats["minimumEvolution"]*100, 0.001)).."%"
+        end
+
+        if contentTable.LowPlayer then
+            contentTable.LowPlayer.caption =
+                tostring(gui.roundTo(stats["lowPlayer"]*100, 0.001)).."%"
+        end
+
+        if contentTable.MediumPlayer then
+            contentTable.MediumPlayer.caption =
+                tostring(gui.roundTo(stats["mediumPlayer"]*100, 0.001)).."%"
+        end
+
+        if contentTable.HighPlayer then
+            contentTable.HighPlayer.caption =
+                tostring(gui.roundTo(stats["highPlayer"]*100, 0.001)).."%"
         end
 
         if contentTable.ResearchEvolutionCap then

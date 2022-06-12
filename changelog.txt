@@ -2,6 +2,7 @@
 Version: 1.5.0
   Improvements:
     - Added evolution cap based on research
+    - Added evolution per player structure killed for low, medium, and high value entities
   Tweaks:
     - Reduced spawner kills default mod setting for evolution contribution to 300
     - Switched pause vanilla evolution factor mod setting to be enabled by default

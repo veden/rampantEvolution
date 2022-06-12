@@ -54,6 +54,38 @@ local SHORT_EVOLUTION_CHECK_DURATION = 5 * 60 * 60
 local LONG_EVOLUTION_CHECK_DURATION = 30 * 60 * 60
 local LONG_LONG_EVOLUTION_CHECK_DURATION = 60 * 60 * 60
 
+
+local LOW_VALUE_PLAYER_STRUCTURES = {
+    "turret",
+    "ammo-turret",
+    "electric-turret",
+    "fluid-turret",
+    "artillery-turret",
+    "electric-pole"
+}
+
+local MEDIUM_VALUE_PLAYER_STRUCTURES = {
+    "solar-panel",
+    "accumulator",
+    "radar",
+    "storage-tank",
+    "container",
+    "logistic-container",
+    "lab"
+}
+
+local HIGH_VALUE_PLAYER_STRUCTURES = {
+    "assembling-machine",
+    "furnace",
+    "roboport",
+    "beacon",
+    "boiler",
+    "generator",
+    "mining-drill",
+    "reactor",
+    "rocket-silo"
+}
+
 -- imported functions
 
 local sFind = string.find
@@ -65,22 +97,6 @@ local roundTo = gui.roundTo
 local world
 
 -- module code
-
-local function getSpawnerMultipler(name)
-    return world.spawnerLookup[name]
-end
-
-local function getWormMultipler(name)
-    return world.wormLookup[name]
-end
-
-local function getHiveMultipler(name)
-    return world.hiveLookup[name]
-end
-
-local function getUnitMultipler(name)
-    return world.unitLookup[name]
-end
 
 local function onStatsGrabPollution()
     local pollutionStats = game.pollution_statistics
@@ -128,7 +144,22 @@ local function onStatsGrabKill()
     local killStats = game.forces.enemy.kill_count_statistics
 
     local counts = killStats.output_counts
+    for name,count in pairs(counts) do
+        local previousCount = world.kills[name]
+        world.kills[name] = count
+        local delta
+        if not previousCount then
+            delta = count
+        else
+            delta = count - previousCount
+        end
 
+        if delta ~= 0 then
+            world.killDeltas[name] = (world.killDeltas[name] or 0) + delta
+        end
+    end
+
+    counts = killStats.input_counts
     for name,count in pairs(counts) do
         local previousCount = world.kills[name]
         world.kills[name] = count
@@ -167,7 +198,10 @@ local function reset()
         ["totalPollution"] = 0,
         ["time"] = 0,
         ["minimumEvolution"] = 0,
-        ["researchEvolutionCap"] = 0
+        ["researchEvolutionCap"] = 0,
+        ["lowPlayer"] = 0,
+        ["mediumPlayer"] = 0,
+        ["highPlayer"] = 0
     }
 end
 
@@ -297,6 +331,29 @@ local function onModSettingsChange(event)
         world.stats["researchEvolutionCap"] = 1
     end
 
+    world.evolutionPerLowPlayer = settings.global["rampant-evolution--evolutionPerLowPlayer"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerMediumPlayer = settings.global["rampant-evolution--evolutionPerMediumPlayer"].value * SETTINGS_TO_PERCENT
+    world.evolutionPerHighPlayer = settings.global["rampant-evolution--evolutionPerHighPlayer"].value * SETTINGS_TO_PERCENT
+
+    local structureTypeLookup = {}
+    for _, structure in pairs(LOW_VALUE_PLAYER_STRUCTURES) do
+        structureTypeLookup[structure] = {world.evolutionPerLowPlayer, "lowPlayer"}
+    end
+    for _, structure in pairs(MEDIUM_VALUE_PLAYER_STRUCTURES) do
+        structureTypeLookup[structure] = {world.evolutionPerMediumPlayer, "mediumPlayer"}
+    end
+    for _, structure in pairs(HIGH_VALUE_PLAYER_STRUCTURES) do
+        structureTypeLookup[structure] = {world.evolutionPerHighPlayer, "highPlayer"}
+    end
+
+    world.playerStructureLookup = {}
+    for entityName, entityPrototype in pairs(game.entity_prototypes) do
+        local structureType = structureTypeLookup[entityPrototype.type]
+        if structureType then
+            world.playerStructureLookup[entityName] = structureType
+        end
+    end
+
     if settings.global["rampant-evolution--setMapSettingsToZero"].value then
         game.map_settings.enemy_evolution.enabled = false
     else
@@ -381,7 +438,7 @@ local function processKill(evo, initialRunsRemaining)
                 stats["time"] = stats["time"] + contribution
             end
         end
-    elseif getSpawnerMultipler(name) then
+    elseif world.spawnerLookup[name] then
         if world.evolutionPerSpawnerKilled ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
@@ -390,7 +447,7 @@ local function processKill(evo, initialRunsRemaining)
                 stats["spawner"] = stats["spawner"] + contribution
             end
         end
-    elseif getHiveMultipler(name) then
+    elseif world.hiveLookup[name] then
         if world.evolutionPerHiveKilled ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
@@ -399,7 +456,7 @@ local function processKill(evo, initialRunsRemaining)
                 stats["hive"] = stats["hive"] + contribution
             end
         end
-    elseif getWormMultipler(name) then
+    elseif world.wormLookup[name] then
         if world.evolutionPerWormKilled ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
@@ -408,13 +465,25 @@ local function processKill(evo, initialRunsRemaining)
                 stats["worm"] = stats["worm"] + contribution
             end
         end
-    elseif getUnitMultipler(name) then
+    elseif world.unitLookup[name] then
         if world.evolutionPerUnitKilled ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
                 local contribution = ((1 - evo)^2) * world.evolutionPerUnitKilled
                 evo = evo + contribution
                 stats["unit"] = stats["unit"] + contribution
+            end
+        end
+    elseif world.playerStructureLookup[name] then
+        local evolutionDeltaPair = world.playerStructureLookup[name]
+        if evolutionDeltaPair and evolutionDeltaPair[1] ~= 0 then
+            local evolutionDelta = evolutionDeltaPair[1]
+            local evolutionStat = evolutionDeltaPair[2]
+            while (runsRemaining > 0) do
+                runsRemaining = runsRemaining - 1
+                local contribution = ((1 - evo)^2) * evolutionDelta
+                evo = evo + contribution
+                stats[evolutionStat] = stats[evolutionStat] + contribution
             end
         end
     end
@@ -482,7 +551,7 @@ local function processPollution(evo, initialRunsRemaining)
                 stats["totalPollution"] = stats["totalPollution"] + contribution
             end
         end
-    elseif getSpawnerMultipler(name) then
+    elseif world.spawnerLookup[name] then
         if world.evolutionPerSpawnerAbsorbed ~= 0 then
             while (runsRemaining > 0) do
                 runsRemaining = runsRemaining - 1
@@ -517,6 +586,9 @@ local function printEvolutionMsg()
             roundTo(stats["time"]*100, 0.001),
             roundTo(stats["minimumEvolution"]*100, 0.001),
             roundTo(stats["researchEvolutionCap"]*100, 0.001),
+            roundTo(stats["lowPlayer"]*100, 0.001),
+            roundTo(stats["mediumPlayer"]*100, 0.001),
+            roundTo(stats["highPlayer"]*100, 0.001),
             roundTo(world.lastChangeShort*100, 0.001),
             roundTo(world.lastChangeLong*100, 0.001),
             roundTo(world.lastChangeLongLong*100, 0.001)
@@ -625,9 +697,10 @@ end
 
 local function onResearchCompleted(event)
     if world.enabledResearchEvolutionCap then
-        local technologyName = event.research.name
+        local research = event.research
+        local technologyName = research.name
         local evolutionIncrease = world.researchLookup[technologyName]
-        if evolutionIncrease then
+        if evolutionIncrease and research.force.name == "player" then
             world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
             world.stats["researchEvolutionCap"] = world.stats["researchEvolutionCap"] + evolutionIncrease[1]
         end
@@ -636,9 +709,10 @@ end
 
 local function onResearchUncompleted(event)
     if world.enabledResearchEvolutionCap then
-        local technologyName = event.research.name
+        local research = event.research
+        local technologyName = research.name
         local evolutionIncrease = world.researchLookup[technologyName]
-        if evolutionIncrease then
+        if evolutionIncrease and research.force.name == "player" then
             world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
             world.stats["researchEvolutionCap"] = world.stats["researchEvolutionCap"] - evolutionIncrease[1]
         end
