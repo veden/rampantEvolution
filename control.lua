@@ -584,11 +584,11 @@ local function printEvolutionMsg()
             roundTo(stats["worm"]*100, 0.001),
             roundTo(stats["totalPollution"]*100, 0.001),
             roundTo(stats["time"]*100, 0.001),
-            roundTo(stats["minimumEvolution"]*100, 0.001),
-            roundTo(stats["researchEvolutionCap"]*100, 0.001),
             roundTo(stats["lowPlayer"]*100, 0.001),
             roundTo(stats["mediumPlayer"]*100, 0.001),
             roundTo(stats["highPlayer"]*100, 0.001),
+            roundTo(stats["minimumEvolution"]*100, 0.001),
+            roundTo(stats["researchEvolutionCap"]*100, 0.001),
             roundTo(world.lastChangeShort*100, 0.001),
             roundTo(world.lastChangeLong*100, 0.001),
             roundTo(world.lastChangeLongLong*100, 0.001)
