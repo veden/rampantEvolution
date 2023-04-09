@@ -591,7 +591,7 @@ local function onProcessingWrapper(event)
     local tick = event.tick
     local resolutionLevel = world.evolutionResolutionLevel
     if resolutionLevel == 0 then
-        local x = tick / 17280000 -- (60 * 60 * 60 * 80)
+        local x = tick / 43200000 -- (60 * 60 * 60 * 200)
         resolutionLevel = linearInterpolation(
             mMin(x, 1),
             20,
