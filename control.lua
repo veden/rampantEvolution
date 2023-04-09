@@ -217,6 +217,8 @@ local function onModSettingsChange(event)
         return false
     end
 
+    world.processingPerTick = settings.global["rampant-evolution--processingPerTick"].value
+
     world.evolutionPerSpawnerAbsorbed = settings.global["rampant-evolution-evolutionPerSpawnerAbsorbed"].value * SETTINGS_TO_PERCENT
     world.evolutionPerTreeAbsorbed = settings.global["rampant-evolution-evolutionPerTreeAbsorbed"].value * SETTINGS_TO_PERCENT
     world.evolutionPerTreeDied = settings.global["rampant-evolution-evolutionPerTreeDied"].value * SETTINGS_TO_PERCENT
@@ -574,9 +576,19 @@ local function linearInterpolation(percent, min, max)
     return ((max - min) * percent) + min
 end
 
-local function onProcessing(event)
-    local tick = event.tick
+local function processing(resolutionLevel, evo)
+    return processKill(
+        processPollution(
+            evo,
+            resolutionLevel
+        ),
+        resolutionLevel
+    )
+end
+
+local function onProcessingWrapper(event)
     local enemy = game.forces.enemy
+    local tick = event.tick
     local resolutionLevel = world.evolutionResolutionLevel
     if resolutionLevel == 0 then
         local x = tick / 17280000 -- (60 * 60 * 60 * 80)
@@ -586,13 +598,11 @@ local function onProcessing(event)
             4000
         )
     end
-    local evo = processKill(
-        processPollution(
-            enemy.evolution_factor,
-            resolutionLevel
-        ),
-        resolutionLevel
-    )
+
+    local evo = enemy.evolution_factor
+    for _ = 1, world.processingPerTick do
+        evo = processing(resolutionLevel, evo)
+    end
     enemy.evolution_factor = evo
 
     if (tick % 60) == 0 then
@@ -696,7 +706,7 @@ script.on_event(defines.events.on_lua_shortcut, onLuaShortcut)
 script.on_nth_tick((2*60*60)+0, onStatsGrabPollution)
 script.on_nth_tick((2*60*60)+1, onStatsGrabKill)
 script.on_nth_tick((2*60*60)+2, onStatsGrabTotalPollution)
-script.on_event(defines.events.on_tick, onProcessing)
+script.on_event(defines.events.on_tick, onProcessingWrapper)
 script.on_event(defines.events.on_research_finished, onResearchCompleted)
 script.on_event(defines.events.on_research_reversed, onResearchUncompleted)
 
