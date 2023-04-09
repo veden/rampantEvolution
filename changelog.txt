@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.5.2
+  Bugfixes:
+   - Fixed evolution was not being properly clamped between [0,1)
+   - Fixed evolution breakdown numbers should be much closer to actuals, but still is an approximation
+
+---------------------------------------------------------------------------------------------------
 Version: 1.5.1
   Bugfixes:
     - Fixed /rampantEvolution display order

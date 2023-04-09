@@ -90,6 +90,7 @@ local HIGH_VALUE_PLAYER_STRUCTURES = {
 
 local sFind = string.find
 local mMin = math.min
+local mMax = math.max
 local roundTo = gui.roundTo
 
 -- local references
@@ -97,6 +98,10 @@ local roundTo = gui.roundTo
 local world
 
 -- module code
+
+local function clampValue(e)
+    return e / (1+e)
+end
 
 local function onStatsGrabPollution()
     local pollutionStats = game.pollution_statistics
@@ -183,6 +188,7 @@ local function reset()
     world.killDeltas = {
         ["time"] = math.floor(game.tick / 60)
     }
+    world.totalEvolution = 0
     world.pollutionConsumed = {}
     world.pollutionProduced = {}
     world.pollutionDeltas = {}
@@ -328,7 +334,7 @@ local function onModSettingsChange(event)
             end
         end
     else
-        world.stats["researchEvolutionCap"] = 1
+        world.stats["researchEvolutionCap"] = 0.9999999999999
     end
 
     world.evolutionPerLowPlayer = settings.global["rampant-evolution--evolutionPerLowPlayer"].value * SETTINGS_TO_PERCENT
@@ -379,8 +385,8 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    if not world.version or world.version < 7 then
-        world.version = 7
+    if not world.version or world.version < 10 then
+        world.version = 10
 
         reset()
 
@@ -396,16 +402,41 @@ local function onConfigChanged()
         world.lastChangeLongLongTick = 0
         world.lastChangeLongLongEvolution = 0
         world.lastChangeLongLong = 0
-    end
-    if world.version < 9 then
-        world.version = 9
-
         world.playerIterator = nil
 
         onModSettingsChange()
 
-        game.print("Rampant Evolution - Version 1.5.0")
+        game.print("Rampant Evolution - Version 1.5.2")
     end
+end
+
+local function calculateEvolution(evo, evolutionModifier, stats, statField, runsRemaining)
+    if evolutionModifier ~= 0 then
+        local totalEvolution = world.totalEvolution
+        local minimumEvolution = stats.minimumEvolution
+        local maximumEvolution = stats.researchEvolutionCap
+        local minimumTotalEvolution = mMax(minimumEvolution / (1 - minimumEvolution), 0)
+        local maximumTotalEvolution = mMin(maximumEvolution / (1 - maximumEvolution), 0.9999999999999)
+        while (runsRemaining > 0) do
+            runsRemaining = runsRemaining - 1
+            local contribution = ((1 - evo)^2) * evolutionModifier
+            local adjustedEvo = totalEvolution + contribution
+            if adjustedEvo < minimumTotalEvolution then
+                contribution = minimumTotalEvolution - totalEvolution
+            elseif adjustedEvo > maximumTotalEvolution then
+                contribution = maximumTotalEvolution - totalEvolution
+            end
+            totalEvolution = totalEvolution + contribution
+            evo = clampValue(totalEvolution)
+            stats[statField] = stats[statField] + contribution
+        end
+        local newMinimumEvolution = world.minimumDevolutionPercentage * evo
+        if newMinimumEvolution > minimumEvolution then
+            stats.minimumEvolution = minimumEvolution
+        end
+        world.totalEvolution = totalEvolution
+    end
+    return evo
 end
 
 local function processKill(evo, initialRunsRemaining)
@@ -428,70 +459,39 @@ local function processKill(evo, initialRunsRemaining)
         world.killDeltas[name] = count
     end
 
-    local stats = world.stats
+    local evolutionModifier = 0
+    local statField
+
     if name == "time" then
-        if world.evolutionPerTime ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerTime
-                evo = evo + contribution
-                stats["time"] = stats["time"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerTime
+        statField = "time"
     elseif world.spawnerLookup[name] then
-        if world.evolutionPerSpawnerKilled ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerSpawnerKilled
-                evo = evo + contribution
-                stats["spawner"] = stats["spawner"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerSpawnerKilled
+        statField = "spawner"
     elseif world.hiveLookup[name] then
-        if world.evolutionPerHiveKilled ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerHiveKilled
-                evo = evo + contribution
-                stats["hive"] = stats["hive"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerHiveKilled
+        statField = "hive"
     elseif world.wormLookup[name] then
-        if world.evolutionPerWormKilled ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerWormKilled
-                evo = evo + contribution
-                stats["worm"] = stats["worm"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerWormKilled
+        statField = "worm"
     elseif world.unitLookup[name] then
-        if world.evolutionPerUnitKilled ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerUnitKilled
-                evo = evo + contribution
-                stats["unit"] = stats["unit"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerUnitKilled
+        statField = "unit"
     elseif world.playerStructureLookup[name] then
         local evolutionDeltaPair = world.playerStructureLookup[name]
         if evolutionDeltaPair and evolutionDeltaPair[1] ~= 0 then
-            local evolutionDelta = evolutionDeltaPair[1]
-            local evolutionStat = evolutionDeltaPair[2]
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * evolutionDelta
-                evo = evo + contribution
-                stats[evolutionStat] = stats[evolutionStat] + contribution
-            end
+            evolutionModifier = evolutionDeltaPair[1]
+            statField = evolutionDeltaPair[2]
         end
     end
 
-    if evo < 0 then
-        evo = 0
-    end
-    return evo
+    return calculateEvolution(
+        evo,
+        evolutionModifier,
+        world.stats,
+        statField,
+        runsRemaining
+    )
 end
 
 local function processPollution(evo, initialRunsRemaining)
@@ -514,58 +514,33 @@ local function processPollution(evo, initialRunsRemaining)
         world.pollutionDeltas[name] = count
     end
 
-    local stats = world.stats
+    local evolutionModifier = 0
+    local statField
+
     if (name == "tile-proxy") then
-        if world.evolutionPerTileAbsorbed ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerTileAbsorbed
-                evo = evo + contribution
-                stats["tile"] = stats["tile"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerTileAbsorbed
+        statField = "tile"
     elseif (name == "tree-proxy") then
-        if world.evolutionPerTreeAbsorbed ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerTreeAbsorbed
-                evo = evo + contribution
-                stats["tree"] = stats["tree"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerTreeAbsorbed
+        statField = "tree"
     elseif (name == "tree-dying-proxy") then
-        if world.evolutionPerTreeDied ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerTreeDied
-                evo = evo + contribution
-                stats["dyingTree"] = stats["dyingTree"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerTreeDied
+        statField = "dyingTree"
     elseif (name == "totalPollution") then
-        if world.evolutionPerPollution ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerPollution
-                evo = evo + contribution
-                stats["totalPollution"] = stats["totalPollution"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerPollution
+        statField = "totalPollution"
     elseif world.spawnerLookup[name] then
-        if world.evolutionPerSpawnerAbsorbed ~= 0 then
-            while (runsRemaining > 0) do
-                runsRemaining = runsRemaining - 1
-                local contribution = ((1 - evo)^2) * world.evolutionPerSpawnerAbsorbed
-                evo = evo + contribution
-                stats["absorbed"] = stats["absorbed"] + contribution
-            end
-        end
+        evolutionModifier = world.evolutionPerSpawnerAbsorbed
+        statField = "absorbed"
     end
 
-    if evo < 0 then
-        evo = 0
-    end
-    return evo
+    return calculateEvolution(
+        evo,
+        evolutionModifier,
+        world.stats,
+        statField,
+        runsRemaining
+    )
 end
 
 local function printEvolutionMsg()
@@ -574,19 +549,19 @@ local function printEvolutionMsg()
     game.print({
             "description.rampant-evolution--displayEvolutionMsg",
             roundTo(enemy.evolution_factor*100,0.001),
-            roundTo(stats["tile"]*100, 0.001),
-            roundTo(stats["tree"]*100, 0.001),
-            roundTo(stats["dyingTree"]*100, 0.001),
-            roundTo(stats["absorbed"]*100, 0.001),
-            roundTo(stats["spawner"]*100, 0.001),
-            roundTo(stats["hive"]*100, 0.001),
-            roundTo(stats["unit"]*100, 0.001),
-            roundTo(stats["worm"]*100, 0.001),
-            roundTo(stats["totalPollution"]*100, 0.001),
-            roundTo(stats["time"]*100, 0.001),
-            roundTo(stats["lowPlayer"]*100, 0.001),
-            roundTo(stats["mediumPlayer"]*100, 0.001),
-            roundTo(stats["highPlayer"]*100, 0.001),
+            roundTo(clampValue(stats["tile"])*100, 0.001),
+            roundTo(clampValue(stats["tree"])*100, 0.001),
+            roundTo(clampValue(stats["dyingTree"])*100, 0.001),
+            roundTo(clampValue(stats["absorbed"])*100, 0.001),
+            roundTo(clampValue(stats["spawner"])*100, 0.001),
+            roundTo(clampValue(stats["hive"])*100, 0.001),
+            roundTo(clampValue(stats["unit"])*100, 0.001),
+            roundTo(clampValue(stats["worm"])*100, 0.001),
+            roundTo(clampValue(stats["totalPollution"])*100, 0.001),
+            roundTo(clampValue(stats["time"])*100, 0.001),
+            roundTo(clampValue(stats["lowPlayer"])*100, 0.001),
+            roundTo(clampValue(stats["mediumPlayer"])*100, 0.001),
+            roundTo(clampValue(stats["highPlayer"])*100, 0.001),
             roundTo(stats["minimumEvolution"]*100, 0.001),
             roundTo(stats["researchEvolutionCap"]*100, 0.001),
             roundTo(world.lastChangeShort*100, 0.001),
@@ -618,23 +593,11 @@ local function onProcessing(event)
         ),
         resolutionLevel
     )
+    enemy.evolution_factor = evo
+
     if (tick % 60) == 0 then
         world.killDeltas["time"] = (world.killDeltas["time"] or 0) + 1
     end
-
-    local newMinimumEvolution = enemy.evolution_factor * world.minimumDevolutionPercentage
-    if newMinimumEvolution > world.stats["minimumEvolution"] then
-        world.stats["minimumEvolution"] = newMinimumEvolution
-    end
-    if evo < world.stats["minimumEvolution"] then
-        evo = world.stats["minimumEvolution"]
-    end
-    if world.enabledResearchEvolutionCap then
-        if evo > world.stats["researchEvolutionCap"] then
-            evo = world.stats["researchEvolutionCap"]
-        end
-    end
-    enemy.evolution_factor = evo
 
     if (tick - world.lastChangeShortTick) >= SHORT_EVOLUTION_CHECK_DURATION then
         world.lastChangeShortTick = tick
