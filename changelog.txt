@@ -4,7 +4,6 @@ Version: 1.5.2
    - Increased auto resolution to scale to 200 hrs with additional processingPerTick
   Bugfixes:
    - Fixed evolution was not being properly clamped between [0,1)
-   - Fixed evolution breakdown numbers should be much closer to actuals, but still is an approximation
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.1

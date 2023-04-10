@@ -416,17 +416,22 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
     if evolutionModifier ~= 0 then
         local totalEvolution = world.totalEvolution
         local minimumEvolution = stats.minimumEvolution
-        local maximumEvolution = stats.researchEvolutionCap
+        local maximumEvolution = mMin(stats.researchEvolutionCap, 0.9999999999999)
         local minimumTotalEvolution = mMax(minimumEvolution / (1 - minimumEvolution), 0)
-        local maximumTotalEvolution = mMin(maximumEvolution / (1 - maximumEvolution), 0.9999999999999)
+        local maximumTotalEvolution = mMin(
+            maximumEvolution / (1 - maximumEvolution),
+            0.9999999999999
+        )
         while (runsRemaining > 0) do
             runsRemaining = runsRemaining - 1
             local contribution = ((1 - evo)^2) * evolutionModifier
             local adjustedEvo = totalEvolution + contribution
-            if adjustedEvo < minimumTotalEvolution then
+            if adjustedEvo <= minimumTotalEvolution then
                 contribution = minimumTotalEvolution - totalEvolution
-            elseif adjustedEvo > maximumTotalEvolution then
+                runsRemaining = 0
+            elseif adjustedEvo >= maximumTotalEvolution then
                 contribution = maximumTotalEvolution - totalEvolution
+                runsRemaining = 0
             end
             totalEvolution = totalEvolution + contribution
             evo = clampValue(totalEvolution)
@@ -434,7 +439,7 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
         end
         local newMinimumEvolution = world.minimumDevolutionPercentage * evo
         if newMinimumEvolution > minimumEvolution then
-            stats.minimumEvolution = minimumEvolution
+            stats.minimumEvolution = newMinimumEvolution
         end
         world.totalEvolution = totalEvolution
     end
