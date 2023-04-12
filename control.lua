@@ -91,17 +91,15 @@ local HIGH_VALUE_PLAYER_STRUCTURES = {
 local sFind = string.find
 local mMin = math.min
 local mMax = math.max
+local mAbs = math.abs
 local roundTo = gui.roundTo
+local calculateDisplayValue = gui.calculateDisplayValue
 
 -- local references
 
 local world
 
 -- module code
-
-local function clampValue(e)
-    return e / (1+e)
-end
 
 local function onStatsGrabPollution()
     local pollutionStats = game.pollution_statistics
@@ -189,6 +187,8 @@ local function reset()
         ["time"] = math.floor(game.tick / 60)
     }
     world.totalEvolution = 0
+    world.totalPostiveEvolution = 0
+    world.totalNegativeEvolution = 0
     world.pollutionConsumed = {}
     world.pollutionProduced = {}
     world.pollutionDeltas = {}
@@ -415,6 +415,8 @@ end
 local function calculateEvolution(evo, evolutionModifier, stats, statField, runsRemaining)
     if evolutionModifier ~= 0 then
         local totalEvolution = world.totalEvolution
+        local totalPostiveEvolution = world.totalPostiveEvolution
+        local totalNegativeEvolution = world.totalNegativeEvolution
         local minimumEvolution = stats.minimumEvolution
         local maximumEvolution = mMin(stats.researchEvolutionCap, 0.9999999999999)
         local minimumTotalEvolution = mMax(minimumEvolution / (1 - minimumEvolution), 0)
@@ -433,14 +435,23 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
                 contribution = maximumTotalEvolution - totalEvolution
                 runsRemaining = 0
             end
+
+            if contribution > 0 then
+                totalPostiveEvolution = totalPostiveEvolution + contribution
+            else
+                totalNegativeEvolution = totalNegativeEvolution + contribution
+            end
+
             totalEvolution = totalEvolution + contribution
-            evo = clampValue(totalEvolution)
+            evo = totalEvolution / (1+totalEvolution)
             stats[statField] = stats[statField] + contribution
         end
         local newMinimumEvolution = world.minimumDevolutionPercentage * evo
         if newMinimumEvolution > minimumEvolution then
             stats.minimumEvolution = newMinimumEvolution
         end
+        world.totalNegativeEvolution = totalNegativeEvolution
+        world.totalPostiveEvolution = totalPostiveEvolution
         world.totalEvolution = totalEvolution
     end
     return evo
@@ -553,22 +564,23 @@ end
 local function printEvolutionMsg()
     local enemy = game.forces.enemy
     local stats = world.stats
+    local enemyEvo = enemy.evolution_factor
     game.print({
             "description.rampant-evolution--displayEvolutionMsg",
-            roundTo(enemy.evolution_factor*100,0.001),
-            roundTo(clampValue(stats["tile"])*100, 0.001),
-            roundTo(clampValue(stats["tree"])*100, 0.001),
-            roundTo(clampValue(stats["dyingTree"])*100, 0.001),
-            roundTo(clampValue(stats["absorbed"])*100, 0.001),
-            roundTo(clampValue(stats["spawner"])*100, 0.001),
-            roundTo(clampValue(stats["hive"])*100, 0.001),
-            roundTo(clampValue(stats["unit"])*100, 0.001),
-            roundTo(clampValue(stats["worm"])*100, 0.001),
-            roundTo(clampValue(stats["totalPollution"])*100, 0.001),
-            roundTo(clampValue(stats["time"])*100, 0.001),
-            roundTo(clampValue(stats["lowPlayer"])*100, 0.001),
-            roundTo(clampValue(stats["mediumPlayer"])*100, 0.001),
-            roundTo(clampValue(stats["highPlayer"])*100, 0.001),
+            roundTo(enemyEvo*100,0.001),
+            roundTo(calculateDisplayValue(stats["tile"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["tree"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["dyingTree"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["absorbed"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["spawner"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["hive"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["unit"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["worm"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["totalPollution"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["time"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["lowPlayer"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["mediumPlayer"], world, enemyEvo)*100, 0.001),
+            roundTo(calculateDisplayValue(stats["highPlayer"], world, enemyEvo)*100, 0.001),
             roundTo(stats["minimumEvolution"]*100, 0.001),
             roundTo(stats["researchEvolutionCap"]*100, 0.001),
             roundTo(world.lastChangeShort*100, 0.001),

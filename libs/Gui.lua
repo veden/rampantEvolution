@@ -24,13 +24,29 @@ end
 
 -- import functions
 
+local mAbs = math.abs
+
 -- module code
 
 local gui = {}
 
-local function clampValue(e)
-    return e / (1+e)
+function gui.calculateDisplayValue(e, world, evo)
+    local totalNegEvo = world.totalNegativeEvolution
+    local negEvo = evo
+        * (
+            mAbs(totalNegEvo)
+            / (
+                world.totalPostiveEvolution
+                + mAbs(totalNegEvo)
+              )
+          )
+
+    if e < 0 then
+        return -negEvo * (e / totalNegEvo)
+    else
+        return (evo + mAbs(negEvo)) * (e / world.totalPostiveEvolution)
     end
+end
 
 function gui.roundTo(x, multipler)
     return math.floor(x / multipler) * multipler
@@ -318,59 +334,60 @@ function gui.update(world, playerId, tick)
         local enemy = game.forces.enemy
         local contentTable = guiPanel.contentPanel.contentTable
         local stats = world.stats
+        local enemyEvo = enemy.evolution_factor
         if contentTable.EvolutionValue then
             contentTable.EvolutionValue.caption =
-                tostring(gui.roundTo(enemy.evolution_factor*100,0.001)).."%"
+                tostring(gui.roundTo(enemyEvo*100,0.001)).."%"
         end
 
         if contentTable.TileValue then
             contentTable.TileValue.caption =
-                tostring(gui.roundTo(clampValue(stats["tile"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["tile"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.TreeValue then
             contentTable.TreeValue.caption =
-                tostring(gui.roundTo(clampValue(stats["tree"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["tree"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.DyingTreeValue then
             contentTable.DyingTreeValue.caption =
-                tostring(gui.roundTo(clampValue(stats["dyingTree"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["dyingTree"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.AbsorbedValue then
             contentTable.AbsorbedValue.caption =
-                tostring(gui.roundTo(clampValue(stats["absorbed"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["absorbed"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.SpawnerValue then
             contentTable.SpawnerValue.caption =
-                tostring(gui.roundTo(clampValue(stats["spawner"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["spawner"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.HiveValue then
             contentTable.HiveValue.caption =
-                tostring(gui.roundTo(clampValue(stats["hive"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["hive"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.UnitValue then
             contentTable.UnitValue.caption =
-                tostring(gui.roundTo(clampValue(stats["unit"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["unit"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.WormValue then
             contentTable.WormValue.caption =
-                tostring(gui.roundTo(clampValue(stats["worm"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["worm"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.TotalPollutionValue then
             contentTable.TotalPollutionValue.caption =
-                tostring(gui.roundTo(clampValue(stats["totalPollution"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["totalPollution"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.TimeValue then
             contentTable.TimeValue.caption =
-                tostring(gui.roundTo(clampValue(stats["time"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["time"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.MinimumEvolutionValue then
@@ -380,17 +397,17 @@ function gui.update(world, playerId, tick)
 
         if contentTable.LowPlayer then
             contentTable.LowPlayer.caption =
-                tostring(gui.roundTo(clampValue(stats["lowPlayer"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["lowPlayer"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.MediumPlayer then
             contentTable.MediumPlayer.caption =
-                tostring(gui.roundTo(clampValue(stats["mediumPlayer"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["mediumPlayer"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.HighPlayer then
             contentTable.HighPlayer.caption =
-                tostring(gui.roundTo(clampValue(stats["highPlayer"])*100, 0.001)).."%"
+                tostring(gui.roundTo(gui.calculateDisplayValue(stats["highPlayer"], world, enemyEvo)*100, 0.001)).."%"
         end
 
         if contentTable.ResearchEvolutionCap then

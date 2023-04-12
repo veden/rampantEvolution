@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.2
+  Improvements:
+   - Breakdown now shows the proportional contribute to the current evolution
   Tweaks:
    - Increased auto resolution to scale to 200 hrs with additional processingPerTick
   Bugfixes:
