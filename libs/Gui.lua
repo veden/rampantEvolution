@@ -251,7 +251,10 @@ function gui.create(player, world)
     end
 
     if (world.startResearchEvolutionMultipler ~= world.endResearchEvolutionMultipler)
-        and (world.startResearchEvolutionMultipler ~= 1)
+        or (
+            (world.startResearchEvolutionMultipler ~= 1)
+            and (world.endResearchEvolutionMultipler ~= 1)
+        )
     then
         contents.add({
                 type = "label",
@@ -266,7 +269,7 @@ function gui.create(player, world)
     end
 
     if world.minimumDevolutionPercentage ~= 0 then
-        contents.add({
+       contents.add({
                 type = "label",
                 caption = {"description.rampant-evolution--minimumEvolution"},
                 tooltip = {"tooltip.rampant-evolution--minimumEvolution"}

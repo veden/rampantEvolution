@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.6.0
+  Improvements:
+   - Added evolution multipler based on number of research completed
   Bugfixes:
    - Fixed clamping evolution to 50% instead of 99.99999999999%
 
