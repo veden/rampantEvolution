@@ -446,24 +446,24 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
         local evolutionMultipler = stats.evolutionMultipler
         local maximumEvolution = mMin(stats.researchEvolutionCap, 0.9999999999999)
         local minimumTotalEvolution = mMax(minimumEvolution / (1 - minimumEvolution), 0)
-        local maximumTotalEvolution = mMin(
-            maximumEvolution / (1 - maximumEvolution),
-            0.9999999999999
-        )
-        while (runsRemaining > 0) do
+        local maximumTotalEvolution = maximumEvolution / (1 - maximumEvolution)
+        local process = true
+        while (runsRemaining > 0) and process do
             runsRemaining = runsRemaining - 1
             local contribution = (((1 - evo)^2) * evolutionModifier)
             local adjustedEvo = totalEvolution + (contribution * evolutionMultipler)
             if adjustedEvo <= minimumTotalEvolution then
                 contribution = minimumTotalEvolution - totalEvolution
-                runsRemaining = 0
+                process = false
             elseif adjustedEvo >= maximumTotalEvolution then
                 contribution = maximumTotalEvolution - totalEvolution
-                runsRemaining = 0
+                process = false
             end
 
             if contribution > 0 then
-                contribution = contribution * evolutionMultipler
+                if process then
+                    contribution = contribution * evolutionMultipler
+                end
                 totalPostiveEvolution = totalPostiveEvolution + contribution
             else
                 totalNegativeEvolution = totalNegativeEvolution + contribution

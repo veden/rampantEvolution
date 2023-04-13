@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.6.0
+  Bugfixes:
+   - Fixed clamping evolution to 50% instead of 99.99999999999%
+
+---------------------------------------------------------------------------------------------------
 Version: 1.5.2
   Improvements:
    - Breakdown now shows the proportional contribute to the current evolution
