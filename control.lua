@@ -91,7 +91,6 @@ local HIGH_VALUE_PLAYER_STRUCTURES = {
 local sFind = string.find
 local mMin = math.min
 local mMax = math.max
-local mAbs = math.abs
 local roundTo = gui.roundTo
 local calculateDisplayValue = gui.calculateDisplayValue
 
@@ -100,6 +99,14 @@ local calculateDisplayValue = gui.calculateDisplayValue
 local world
 
 -- module code
+
+local function linearInterpolation(percent, min, max)
+    return ((max - min) * percent) + min
+end
+
+local function variableInterpolation(percent, min, max, exponent)
+    return ((max - min) * (percent^exponent)) + min
+end
 
 local function onStatsGrabPollution()
     local pollutionStats = game.pollution_statistics
@@ -187,6 +194,8 @@ local function reset()
         ["time"] = math.floor(game.tick / 60)
     }
     world.totalEvolution = 0
+    world.researchCompleted = 0
+    world.totalResearch = 0
     world.totalPostiveEvolution = 0
     world.totalNegativeEvolution = 0
     world.pollutionConsumed = {}
@@ -203,6 +212,7 @@ local function reset()
         ["worm"] = 0,
         ["totalPollution"] = 0,
         ["time"] = 0,
+        ["evolutionMultipler"] = 0,
         ["minimumEvolution"] = 0,
         ["researchEvolutionCap"] = 0,
         ["lowPlayer"] = 0,
@@ -262,82 +272,97 @@ local function onModSettingsChange(event)
     end
 
     world.enabledResearchEvolutionCap = settings.global["rampant-evolution--researchEvolutionCap"].value
-    if world.enabledResearchEvolutionCap then
-        world.researchLookup = {}
-        world.researchTotals = {}
-        world.researchCurrent = {}
+    world.researchLookup = {}
+    world.researchTotals = {}
+    world.researchCurrent = {}
 
-        local sciencePackWeightLookup = {
-            [1] = settings.global["rampant-evolution--technology-automation-science-multipler"].value,
-            [2] = settings.global["rampant-evolution--technology-logistic-science-multipler"].value,
-            [3] = settings.global["rampant-evolution--technology-military-science-multipler"].value,
-            [4] = settings.global["rampant-evolution--technology-chemical-science-multipler"].value,
-            [5] = settings.global["rampant-evolution--technology-production-science-multipler"].value,
-            [6] = settings.global["rampant-evolution--technology-utility-science-multipler"].value,
-            [7] = settings.global["rampant-evolution--technology-space-science-multipler"].value
-        }
-        local sciencePackOrder = {
-            "automation-science-pack",
-            "logistic-science-pack",
-            "military-science-pack",
-            "chemical-science-pack",
-            "production-science-pack",
-            "utility-science-pack",
-            "space-science-pack"
-        }
-        local sciencePackOrderLookup = {}
-        for index, science in pairs(sciencePackOrder) do
-            sciencePackOrderLookup[science] = index
-            world.researchTotals[index] = 0
-            world.researchCurrent[index] = 0
-        end
+    local sciencePackWeightLookup = {
+        [1] = settings.global["rampant-evolution--technology-automation-science-multipler"].value,
+        [2] = settings.global["rampant-evolution--technology-logistic-science-multipler"].value,
+        [3] = settings.global["rampant-evolution--technology-military-science-multipler"].value,
+        [4] = settings.global["rampant-evolution--technology-chemical-science-multipler"].value,
+        [5] = settings.global["rampant-evolution--technology-production-science-multipler"].value,
+        [6] = settings.global["rampant-evolution--technology-utility-science-multipler"].value,
+        [7] = settings.global["rampant-evolution--technology-space-science-multipler"].value
+    }
+    local sciencePackOrder = {
+        "automation-science-pack",
+        "logistic-science-pack",
+        "military-science-pack",
+        "chemical-science-pack",
+        "production-science-pack",
+        "utility-science-pack",
+        "space-science-pack"
+    }
+    local sciencePackOrderLookup = {}
+    for index, science in pairs(sciencePackOrder) do
+        sciencePackOrderLookup[science] = index
+        world.researchTotals[index] = 0
+        world.researchCurrent[index] = 0
+    end
 
-        local totalTechnology = 0
-        local includeUpgrades = settings.global["rampant-evolution--researchEvolutionCapIncludeUpgrades"].value
+    local totalTechnology = 0
+    local includeUpgrades = settings.global["rampant-evolution--researchEvolutionCapIncludeUpgrades"].value
 
-        for technologyName, technologyPrototype in pairs(game.technology_prototypes) do
-            local highestOrder = -1
+    for technologyName, technologyPrototype in pairs(game.technology_prototypes) do
+        local highestOrder = -1
 
-            if not technologyPrototype.research_unit_count_formula
-                and technologyPrototype.enabled
-                and not technologyPrototype.hidden
-                and ((not technologyPrototype.upgrade) or (technologyPrototype.upgrade and includeUpgrades))
-            then
-                for _, ingredient in pairs(technologyPrototype.research_unit_ingredients) do
-                    if sciencePackOrderLookup[ingredient.name] then
-                        if highestOrder < sciencePackOrderLookup[ingredient.name] then
-                            highestOrder = sciencePackOrderLookup[ingredient.name]
-                        end
+        if not technologyPrototype.research_unit_count_formula
+            and technologyPrototype.enabled
+            and not technologyPrototype.hidden
+            and ((not technologyPrototype.upgrade) or (technologyPrototype.upgrade and includeUpgrades))
+        then
+            for _, ingredient in pairs(technologyPrototype.research_unit_ingredients) do
+                if sciencePackOrderLookup[ingredient.name] then
+                    if highestOrder < sciencePackOrderLookup[ingredient.name] then
+                        highestOrder = sciencePackOrderLookup[ingredient.name]
                     end
                 end
-                if (highestOrder ~= -1) then
-                    local weight = sciencePackWeightLookup[highestOrder]
-                    totalTechnology = totalTechnology + weight
-                    world.researchTotals[highestOrder] = (world.researchTotals[highestOrder] or 0) + weight
-                    world.researchLookup[technologyName] = {weight, highestOrder}
-                end
+            end
+            if (highestOrder ~= -1) then
+                local weight = sciencePackWeightLookup[highestOrder]
+                totalTechnology = totalTechnology + weight
+                world.researchTotals[highestOrder] = (world.researchTotals[highestOrder] or 0) + weight
+                world.researchLookup[technologyName] = {weight, highestOrder}
+                world.totalResearch = world.totalResearch + 1
             end
         end
+    end
 
-        for tech, value in pairs(world.researchLookup) do
-            world.researchLookup[tech][1] = value[1] / totalTechnology
-        end
-        for scienceIndex=1,#sciencePackOrder do
-            world.researchTotals[scienceIndex] = world.researchTotals[scienceIndex] / totalTechnology
-        end
+    for tech, value in pairs(world.researchLookup) do
+        world.researchLookup[tech][1] = value[1] / totalTechnology
+    end
+    for scienceIndex=1,#sciencePackOrder do
+        world.researchTotals[scienceIndex] = world.researchTotals[scienceIndex] / totalTechnology
+    end
 
-        for technologyName, technology in pairs(game.forces.player.technologies) do
-            if technology.researched then
-                local evolutionIncrease = world.researchLookup[technologyName]
-                if evolutionIncrease then
+    for technologyName, technology in pairs(game.forces.player.technologies) do
+        if technology.researched then
+            local evolutionIncrease = world.researchLookup[technologyName]
+            if evolutionIncrease then
+                world.researchCompleted = world.researchCompleted + 1
+                if world.enabledResearchEvolutionCap then
                     world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
                     world.stats["researchEvolutionCap"] = world.stats["researchEvolutionCap"] + evolutionIncrease[1]
                 end
             end
         end
-    else
+    end
+
+    if not world.enabledResearchEvolutionCap then
         world.stats["researchEvolutionCap"] = 0.9999999999999
     end
+
+    world.startResearchEvolutionMultipler = settings.global["rampant-evolution--startResearchMultipler"].value
+    world.endResearchEvolutionMultipler = settings.global["rampant-evolution--endResearchMultipler"].value
+    world.researchMultiplerExponent = settings.global["rampant-evolution--researchMultiplerExponent"].value
+
+    world.stats.evolutionMultipler = variableInterpolation(
+        (world.researchCompleted / world.totalResearch),
+        world.startResearchEvolutionMultipler,
+        world.endResearchEvolutionMultipler,
+        world.researchMultiplerExponent
+    )
 
     world.evolutionPerLowPlayer = settings.global["rampant-evolution--evolutionPerLowPlayer"].value * SETTINGS_TO_PERCENT
     world.evolutionPerMediumPlayer = settings.global["rampant-evolution--evolutionPerMediumPlayer"].value * SETTINGS_TO_PERCENT
@@ -418,6 +443,7 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
         local totalPostiveEvolution = world.totalPostiveEvolution
         local totalNegativeEvolution = world.totalNegativeEvolution
         local minimumEvolution = stats.minimumEvolution
+        local evolutionMultipler = stats.evolutionMultipler
         local maximumEvolution = mMin(stats.researchEvolutionCap, 0.9999999999999)
         local minimumTotalEvolution = mMax(minimumEvolution / (1 - minimumEvolution), 0)
         local maximumTotalEvolution = mMin(
@@ -426,8 +452,8 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
         )
         while (runsRemaining > 0) do
             runsRemaining = runsRemaining - 1
-            local contribution = ((1 - evo)^2) * evolutionModifier
-            local adjustedEvo = totalEvolution + contribution
+            local contribution = (((1 - evo)^2) * evolutionModifier)
+            local adjustedEvo = totalEvolution + (contribution * evolutionMultipler)
             if adjustedEvo <= minimumTotalEvolution then
                 contribution = minimumTotalEvolution - totalEvolution
                 runsRemaining = 0
@@ -437,6 +463,7 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
             end
 
             if contribution > 0 then
+                contribution = contribution * evolutionMultipler
                 totalPostiveEvolution = totalPostiveEvolution + contribution
             else
                 totalNegativeEvolution = totalNegativeEvolution + contribution
@@ -581,16 +608,13 @@ local function printEvolutionMsg()
             roundTo(calculateDisplayValue(stats["lowPlayer"], world, enemyEvo)*100, 0.001),
             roundTo(calculateDisplayValue(stats["mediumPlayer"], world, enemyEvo)*100, 0.001),
             roundTo(calculateDisplayValue(stats["highPlayer"], world, enemyEvo)*100, 0.001),
+            roundTo(stats["evolutionMultipler"]*100, 0.001),
             roundTo(stats["minimumEvolution"]*100, 0.001),
             roundTo(stats["researchEvolutionCap"]*100, 0.001),
             roundTo(world.lastChangeShort*100, 0.001),
             roundTo(world.lastChangeLong*100, 0.001),
             roundTo(world.lastChangeLongLong*100, 0.001)
     })
-end
-
-local function linearInterpolation(percent, min, max)
-    return ((max - min) * percent) + min
 end
 
 local function processing(resolutionLevel, evo)
@@ -686,11 +710,22 @@ local function onPlayerRemoved(event)
 end
 
 local function onResearchCompleted(event)
-    if world.enabledResearchEvolutionCap then
-        local research = event.research
-        local technologyName = research.name
-        local evolutionIncrease = world.researchLookup[technologyName]
-        if evolutionIncrease and research.force.name == "player" then
+    if not world.researchLookup then
+        return
+    end
+    local research = event.research
+    local technologyName = research.name
+    local evolutionIncrease = world.researchLookup[technologyName]
+    if evolutionIncrease and research.force.name == "player" then
+        world.researchCompleted = world.researchCompleted + 1
+        world.stats.evolutionMultipler = variableInterpolation(
+            (world.researchCompleted / world.totalResearch),
+            world.startResearchEvolutionMultipler,
+            world.endResearchEvolutionMultipler,
+            world.researchMultiplerExponent
+        )
+
+        if world.enabledResearchEvolutionCap then
             world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
             world.stats["researchEvolutionCap"] = world.stats["researchEvolutionCap"] + evolutionIncrease[1]
         end
@@ -698,11 +733,22 @@ local function onResearchCompleted(event)
 end
 
 local function onResearchUncompleted(event)
-    if world.enabledResearchEvolutionCap then
-        local research = event.research
-        local technologyName = research.name
-        local evolutionIncrease = world.researchLookup[technologyName]
-        if evolutionIncrease and research.force.name == "player" then
+    if not world.researchLookup then
+        return
+    end
+    local research = event.research
+    local technologyName = research.name
+    local evolutionIncrease = world.researchLookup[technologyName]
+    if evolutionIncrease and research.force.name == "player" then
+        world.researchCompleted = world.researchCompleted - 1
+        world.stats.evolutionMultipler = variableInterpolation(
+            (world.researchCompleted / world.totalResearch),
+            world.startResearchEvolutionMultipler,
+            world.endResearchEvolutionMultipler,
+            world.researchMultiplerExponent
+        )
+
+        if world.enabledResearchEvolutionCap then
             world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
             world.stats["researchEvolutionCap"] = world.stats["researchEvolutionCap"] - evolutionIncrease[1]
         end

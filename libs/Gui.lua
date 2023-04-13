@@ -250,6 +250,21 @@ function gui.create(player, world)
         })
     end
 
+    if (world.startResearchEvolutionMultipler ~= world.endResearchEvolutionMultipler)
+        and (world.startResearchEvolutionMultipler ~= 1)
+    then
+        contents.add({
+                type = "label",
+                caption = {"description.rampant-evolution--evolutionMultipler"},
+                tooltip = {"tooltip.rampant-evolution--evolutionMultipler"}
+        })
+        contents.add({
+                type = "label",
+                name = "EvolutionMultipler",
+                tooltip = {"tooltip.rampant-evolution--evolutionMultipler"}
+        })
+    end
+
     if world.minimumDevolutionPercentage ~= 0 then
         contents.add({
                 type = "label",
@@ -388,6 +403,11 @@ function gui.update(world, playerId, tick)
         if contentTable.TimeValue then
             contentTable.TimeValue.caption =
                 tostring(gui.roundTo(gui.calculateDisplayValue(stats["time"], world, enemyEvo)*100, 0.001)).."%"
+        end
+
+        if contentTable.EvolutionMultipler then
+            contentTable.EvolutionMultipler.caption =
+                tostring(gui.roundTo(stats["evolutionMultipler"]*100, 0.001)).."%"
         end
 
         if contentTable.MinimumEvolutionValue then

@@ -67,6 +67,39 @@ data:extend({
 
         {
             type = "double-setting",
+            name = "rampant-evolution--startResearchMultipler",
+            setting_type = "runtime-global",
+            minimum_value = 0.00001,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-z[unit]z",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--endResearchMultipler",
+            setting_type = "runtime-global",
+            minimum_value = 0.00001,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-z[unit]zz",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--researchMultiplerExponent",
+            setting_type = "runtime-global",
+            minimum_value = 0.00001,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-z[unit]zzz",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
             name = "rampant-evolution--minimumDevolutionPercentage",
             setting_type = "runtime-global",
             minimum_value = 0,
