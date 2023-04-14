@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.6.2
+  Bugfixes:
+    - Fixed changelog not displaying in-game
+
+---------------------------------------------------------------------------------------------------
 Version: 1.6.1
   Bugfixes:
     - Fixed multiplier typo in settings and descriptions
@@ -6,19 +11,19 @@ Version: 1.6.1
 ---------------------------------------------------------------------------------------------------
 Version: 1.6.0
   Improvements:
-   - Added evolution multipler based on number of research completed
-   - Added tick multipler based on ticks that have elapsed in a game
+    - Added evolution multipler based on number of research completed
+    - Added tick multipler based on ticks that have elapsed in a game
   Bugfixes:
-   - Fixed clamping evolution to 50% instead of 99.99999999999%
+    - Fixed clamping evolution to 50% instead of 99.99999999999%
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.2
   Improvements:
-   - Breakdown now shows the proportional contribute to the current evolution
+    - Breakdown now shows the proportional contribute to the current evolution
   Tweaks:
-   - Increased auto resolution to scale to 200 hrs with additional processingPerTick
+    - Increased auto resolution to scale to 200 hrs with additional processingPerTick
   Bugfixes:
-   - Fixed evolution was not being properly clamped between [0,1)
+    - Fixed evolution was not being properly clamped between [0,1)
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.1
