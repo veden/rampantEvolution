@@ -450,7 +450,7 @@ local function onConfigChanged()
 
         onModSettingsChange()
 
-        game.print("Rampant Evolution - Version 1.6.1")
+        game.print("Rampant Evolution - Version 1.6.2")
     end
 end
 
