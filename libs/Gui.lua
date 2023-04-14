@@ -48,8 +48,8 @@ function gui.calculateDisplayValue(e, world, evo)
     end
 end
 
-function gui.roundTo(x, multipler)
-    return math.floor(x / multipler) * multipler
+function gui.roundTo(x, multiplier)
+    return math.floor(x / multiplier) * multiplier
 end
 
 function gui.create(player, world)
@@ -250,16 +250,16 @@ function gui.create(player, world)
         })
     end
 
-    if world.toggleTickEvolutionMultipler or world.toggleResearchEvolutionMultipler then
+    if world.toggleTickEvolutionMultiplier or world.toggleResearchEvolutionMultiplier then
         contents.add({
                 type = "label",
-                caption = {"description.rampant-evolution--evolutionMultipler"},
-                tooltip = {"tooltip.rampant-evolution--evolutionMultipler"}
+                caption = {"description.rampant-evolution--evolutionMultiplier"},
+                tooltip = {"tooltip.rampant-evolution--evolutionMultiplier"}
         })
         contents.add({
                 type = "label",
-                name = "EvolutionMultipler",
-                tooltip = {"tooltip.rampant-evolution--evolutionMultipler"}
+                name = "EvolutionMultiplier",
+                tooltip = {"tooltip.rampant-evolution--evolutionMultiplier"}
         })
     end
 
@@ -403,9 +403,9 @@ function gui.update(world, playerId, tick)
                 tostring(gui.roundTo(gui.calculateDisplayValue(stats["time"], world, enemyEvo)*100, 0.001)).."%"
         end
 
-        if contentTable.EvolutionMultipler then
-            contentTable.EvolutionMultipler.caption =
-                tostring(gui.roundTo(stats["evolutionMultipler"]*100, 0.001)).."%"
+        if contentTable.EvolutionMultiplier then
+            contentTable.EvolutionMultiplier.caption =
+                tostring(gui.roundTo(stats["evolutionMultiplier"]*100, 0.001)).."%"
         end
 
         if contentTable.MinimumEvolutionValue then

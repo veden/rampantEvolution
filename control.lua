@@ -197,8 +197,8 @@ local function reset()
     world.researchCompleted = 0
     world.totalResearch = 0
     world.ticksAccrued = 0
-    world.researchEvolutionMultipler = 0
-    world.tickEvolutionMultipler = 0
+    world.researchEvolutionMultiplier = 0
+    world.tickEvolutionMultiplier = 0
     world.totalPostiveEvolution = 0
     world.totalNegativeEvolution = 0
     world.pollutionConsumed = {}
@@ -215,7 +215,7 @@ local function reset()
         ["worm"] = 0,
         ["totalPollution"] = 0,
         ["time"] = 0,
-        ["evolutionMultipler"] = 0,
+        ["evolutionMultiplier"] = 0,
         ["minimumEvolution"] = 0,
         ["researchEvolutionCap"] = 0,
         ["lowPlayer"] = 0,
@@ -280,13 +280,13 @@ local function onModSettingsChange(event)
     world.researchCurrent = {}
 
     local sciencePackWeightLookup = {
-        [1] = settings.global["rampant-evolution--technology-automation-science-multipler"].value,
-        [2] = settings.global["rampant-evolution--technology-logistic-science-multipler"].value,
-        [3] = settings.global["rampant-evolution--technology-military-science-multipler"].value,
-        [4] = settings.global["rampant-evolution--technology-chemical-science-multipler"].value,
-        [5] = settings.global["rampant-evolution--technology-production-science-multipler"].value,
-        [6] = settings.global["rampant-evolution--technology-utility-science-multipler"].value,
-        [7] = settings.global["rampant-evolution--technology-space-science-multipler"].value
+        [1] = settings.global["rampant-evolution--technology-automation-science-multiplier"].value,
+        [2] = settings.global["rampant-evolution--technology-logistic-science-multiplier"].value,
+        [3] = settings.global["rampant-evolution--technology-military-science-multiplier"].value,
+        [4] = settings.global["rampant-evolution--technology-chemical-science-multiplier"].value,
+        [5] = settings.global["rampant-evolution--technology-production-science-multiplier"].value,
+        [6] = settings.global["rampant-evolution--technology-utility-science-multiplier"].value,
+        [7] = settings.global["rampant-evolution--technology-space-science-multiplier"].value
     }
     local sciencePackOrder = {
         "automation-science-pack",
@@ -356,28 +356,28 @@ local function onModSettingsChange(event)
         world.stats["researchEvolutionCap"] = 0.9999999999999
     end
 
-    world.toggleResearchEvolutionMultipler = settings.global["rampant-evolution--toggleResearchEvolutionMultipler"].value
-    world.startResearchEvolutionMultipler = settings.global["rampant-evolution--startResearchMultipler"].value
-    world.endResearchEvolutionMultipler = settings.global["rampant-evolution--endResearchMultipler"].value
-    world.researchMultiplerExponent = settings.global["rampant-evolution--researchMultiplerExponent"].value
+    world.toggleResearchEvolutionMultiplier = settings.global["rampant-evolution--toggleResearchEvolutionMultiplier"].value
+    world.startResearchEvolutionMultiplier = settings.global["rampant-evolution--startResearchMultiplier"].value
+    world.endResearchEvolutionMultiplier = settings.global["rampant-evolution--endResearchMultiplier"].value
+    world.researchMultiplierExponent = settings.global["rampant-evolution--researchMultiplierExponent"].value
 
-    world.toggleTickEvolutionMultipler = settings.global["rampant-evolution--toggleTickEvolutionMultipler"].value
-    world.startTickEvolutionMultipler = settings.global["rampant-evolution--startTickMultipler"].value
-    world.endTickEvolutionMultipler = settings.global["rampant-evolution--endTickMultipler"].value
-    world.tickMultiplerExponent = settings.global["rampant-evolution--tickMultiplerExponent"].value
+    world.toggleTickEvolutionMultiplier = settings.global["rampant-evolution--toggleTickEvolutionMultiplier"].value
+    world.startTickEvolutionMultiplier = settings.global["rampant-evolution--startTickMultiplier"].value
+    world.endTickEvolutionMultiplier = settings.global["rampant-evolution--endTickMultiplier"].value
+    world.tickMultiplierExponent = settings.global["rampant-evolution--tickMultiplierExponent"].value
 
-    if world.toggleResearchEvolutionMultipler then
-        world.researchEvolutionMultipler = variableInterpolation(
+    if world.toggleResearchEvolutionMultiplier then
+        world.researchEvolutionMultiplier = variableInterpolation(
             (world.researchCompleted / world.totalResearch),
-            world.startResearchEvolutionMultipler,
-            world.endResearchEvolutionMultipler,
-            world.researchMultiplerExponent
+            world.startResearchEvolutionMultiplier,
+            world.endResearchEvolutionMultiplier,
+            world.researchMultiplierExponent
         )
 
-        world.stats.evolutionMultipler = world.researchEvolutionMultipler + world.tickEvolutionMultipler
+        world.stats.evolutionMultiplier = world.researchEvolutionMultiplier + world.tickEvolutionMultiplier
     end
 
-    world.totalTicksAccruable = settings.global["rampant-evolution--totalTickMultipler"].value * (60 * 60)
+    world.totalTicksAccruable = settings.global["rampant-evolution--totalTickMultiplier"].value * (60 * 60)
 
     world.evolutionPerLowPlayer = settings.global["rampant-evolution--evolutionPerLowPlayer"].value * SETTINGS_TO_PERCENT
     world.evolutionPerMediumPlayer = settings.global["rampant-evolution--evolutionPerMediumPlayer"].value * SETTINGS_TO_PERCENT
@@ -450,24 +450,24 @@ local function onConfigChanged()
 
         onModSettingsChange()
 
-        game.print("Rampant Evolution - Version 1.6.0")
+        game.print("Rampant Evolution - Version 1.6.1")
     end
 end
 
 local function calculateEvolution(evo, evolutionModifier, stats, statField, runsRemaining)
-    if world.toggleTickEvolutionMultipler
+    if world.toggleTickEvolutionMultiplier
         and (statField == "time")
     then
         world.ticksAccrued = world.ticksAccrued + (60 * runsRemaining)
 
-        world.tickEvolutionMultipler = variableInterpolation(
+        world.tickEvolutionMultiplier = variableInterpolation(
             world.ticksAccrued / world.totalTicksAccruable,
-            world.startTickEvolutionMultipler,
-            world.endTickEvolutionMultipler,
-            world.tickMultiplerExponent
+            world.startTickEvolutionMultiplier,
+            world.endTickEvolutionMultiplier,
+            world.tickMultiplierExponent
         )
 
-        world.stats.evolutionMultipler = world.researchEvolutionMultipler + world.tickEvolutionMultipler
+        world.stats.evolutionMultiplier = world.researchEvolutionMultiplier + world.tickEvolutionMultiplier
     end
 
     if (evolutionModifier ~= 0) then
@@ -475,7 +475,7 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
         local totalPostiveEvolution = world.totalPostiveEvolution
         local totalNegativeEvolution = world.totalNegativeEvolution
         local minimumEvolution = stats.minimumEvolution
-        local evolutionMultipler = 1 + stats.evolutionMultipler
+        local evolutionMultiplier = 1 + stats.evolutionMultiplier
         local maximumEvolution = mMin(stats.researchEvolutionCap, 0.9999999999999)
         local minimumTotalEvolution = mMax(minimumEvolution / (1 - minimumEvolution), 0)
         local maximumTotalEvolution = maximumEvolution / (1 - maximumEvolution)
@@ -484,7 +484,7 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
         while (runsRemaining > 0) and process do
             runsRemaining = runsRemaining - 1
             local contribution = (((1 - evo)^2) * evolutionModifier)
-            local adjustedEvo = totalEvolution + (contribution * evolutionMultipler)
+            local adjustedEvo = totalEvolution + (contribution * evolutionMultiplier)
             if adjustedEvo <= minimumTotalEvolution then
                 contribution = minimumTotalEvolution - totalEvolution
                 process = false
@@ -495,7 +495,7 @@ local function calculateEvolution(evo, evolutionModifier, stats, statField, runs
 
             if contribution > 0 then
                 if process then
-                    contribution = contribution * evolutionMultipler
+                    contribution = contribution * evolutionMultiplier
                 end
                 totalPostiveEvolution = totalPostiveEvolution + contribution
             else
@@ -641,7 +641,7 @@ local function printEvolutionMsg()
             roundTo(calculateDisplayValue(stats["lowPlayer"], world, enemyEvo)*100, 0.001),
             roundTo(calculateDisplayValue(stats["mediumPlayer"], world, enemyEvo)*100, 0.001),
             roundTo(calculateDisplayValue(stats["highPlayer"], world, enemyEvo)*100, 0.001),
-            roundTo(stats["evolutionMultipler"]*100, 0.001),
+            roundTo(stats["evolutionMultiplier"]*100, 0.001),
             roundTo(stats["minimumEvolution"]*100, 0.001),
             roundTo(stats["researchEvolutionCap"]*100, 0.001),
             roundTo(world.lastChangeShort*100, 0.001),
@@ -749,19 +749,19 @@ local function onResearchCompleted(event)
     local research = event.research
     local technologyName = research.name
     local evolutionIncrease = world.researchLookup[technologyName]
-    if world.toggleResearchEvolutionMultipler
+    if world.toggleResearchEvolutionMultiplier
         and evolutionIncrease
         and research.force.name == "player"
     then
         world.researchCompleted = world.researchCompleted + 1
-        world.researchEvolutionMultipler = variableInterpolation(
+        world.researchEvolutionMultiplier = variableInterpolation(
             (world.researchCompleted / world.totalResearch),
-            world.startResearchEvolutionMultipler,
-            world.endResearchEvolutionMultipler,
-            world.researchMultiplerExponent
+            world.startResearchEvolutionMultiplier,
+            world.endResearchEvolutionMultiplier,
+            world.researchMultiplierExponent
         )
 
-        world.stats.evolutionMultipler = world.researchEvolutionMultipler + world.tickEvolutionMultipler
+        world.stats.evolutionMultiplier = world.researchEvolutionMultiplier + world.tickEvolutionMultiplier
 
         if world.enabledResearchEvolutionCap then
             world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]
@@ -777,19 +777,19 @@ local function onResearchUncompleted(event)
     local research = event.research
     local technologyName = research.name
     local evolutionIncrease = world.researchLookup[technologyName]
-    if world.toggleResearchEvolutionMultipler
+    if world.toggleResearchEvolutionMultiplier
         and evolutionIncrease
         and research.force.name == "player"
     then
         world.researchCompleted = world.researchCompleted - 1
-        world.researchEvolutionMultipler = variableInterpolation(
+        world.researchEvolutionMultiplier = variableInterpolation(
             (world.researchCompleted / world.totalResearch),
-            world.startResearchEvolutionMultipler,
-            world.endResearchEvolutionMultipler,
-            world.researchMultiplerExponent
+            world.startResearchEvolutionMultiplier,
+            world.endResearchEvolutionMultiplier,
+            world.researchMultiplierExponent
         )
 
-        world.stats.evolutionMultipler = world.researchEvolutionMultipler + world.tickEvolutionMultipler
+        world.stats.evolutionMultiplier = world.researchEvolutionMultiplier + world.tickEvolutionMultiplier
 
         if world.enabledResearchEvolutionCap then
             world.researchCurrent[evolutionIncrease[2]] = world.researchCurrent[evolutionIncrease[2]] + evolutionIncrease[1]

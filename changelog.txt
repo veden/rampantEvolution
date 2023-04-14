@@ -1,7 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.6.1
+  Bugfixes:
+    - Fixed multiplier typo in settings and descriptions
+
+---------------------------------------------------------------------------------------------------
 Version: 1.6.0
   Improvements:
    - Added evolution multipler based on number of research completed
+   - Added tick multipler based on ticks that have elapsed in a game
   Bugfixes:
    - Fixed clamping evolution to 50% instead of 99.99999999999%
 
