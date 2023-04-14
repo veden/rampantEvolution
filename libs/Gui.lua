@@ -250,12 +250,7 @@ function gui.create(player, world)
         })
     end
 
-    if (world.startResearchEvolutionMultipler ~= world.endResearchEvolutionMultipler)
-        or (
-            (world.startResearchEvolutionMultipler ~= 1)
-            and (world.endResearchEvolutionMultipler ~= 1)
-        )
-    then
+    if world.toggleTickEvolutionMultipler or world.toggleResearchEvolutionMultipler then
         contents.add({
                 type = "label",
                 caption = {"description.rampant-evolution--evolutionMultipler"},

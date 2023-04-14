@@ -66,11 +66,20 @@ data:extend({
         },
 
         {
+            type = "bool-setting",
+            name = "rampant-evolution--toggleResearchEvolutionMultipler",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "l[modifier]-z[unit]",
+            per_user = false
+        },
+
+        {
             type = "double-setting",
             name = "rampant-evolution--startResearchMultipler",
             setting_type = "runtime-global",
-            minimum_value = 0.00001,
-            default_value = 1,
+            minimum_value = -10000,
+            default_value = 0,
             maximum_value = 10000,
             order = "l[modifier]-z[unit]z",
             per_user = false
@@ -80,8 +89,8 @@ data:extend({
             type = "double-setting",
             name = "rampant-evolution--endResearchMultipler",
             setting_type = "runtime-global",
-            minimum_value = 0.00001,
-            default_value = 1,
+            minimum_value = -10000,
+            default_value = 0,
             maximum_value = 10000,
             order = "l[modifier]-z[unit]zz",
             per_user = false
@@ -91,10 +100,63 @@ data:extend({
             type = "double-setting",
             name = "rampant-evolution--researchMultiplerExponent",
             setting_type = "runtime-global",
-            minimum_value = 0.00001,
+            minimum_value = -10000,
             default_value = 1,
             maximum_value = 10000,
             order = "l[modifier]-z[unit]zzz",
+            per_user = false
+        },
+
+        {
+            type = "bool-setting",
+            name = "rampant-evolution--toggleTickEvolutionMultipler",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "l[modifier]-zz[unit]",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--startTickMultipler",
+            setting_type = "runtime-global",
+            minimum_value = -10000,
+            default_value = 0,
+            maximum_value = 10000,
+            order = "l[modifier]-zz[unit]z",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--endTickMultipler",
+            setting_type = "runtime-global",
+            minimum_value = -10000,
+            default_value = 0,
+            maximum_value = 10000,
+            order = "l[modifier]-zz[unit]zz",
+            per_user = false
+        },
+
+        {
+            type = "double-setting",
+            name = "rampant-evolution--tickMultiplerExponent",
+            setting_type = "runtime-global",
+            minimum_value = -10000,
+            default_value = 1,
+            maximum_value = 10000,
+            order = "l[modifier]-zz[unit]zzz",
+            per_user = false
+        },
+
+        {
+            type = "int-setting",
+            name = "rampant-evolution--totalTickMultipler",
+            setting_type = "runtime-global",
+            minimum_value = 1,
+            default_value = 60 * 40,
+            maximum_value = 10000000000,
+            order = "l[modifier]-zz[unit]zzz",
             per_user = false
         },
 
