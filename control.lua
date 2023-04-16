@@ -427,8 +427,8 @@ local function onModSettingsChange(event)
 end
 
 local function onConfigChanged()
-    if not world.version or world.version < 10 then
-        world.version = 10
+    if not world.version or world.version < 11 then
+        world.version = 11
 
         reset()
 
@@ -450,7 +450,7 @@ local function onConfigChanged()
 
         onModSettingsChange()
 
-        game.print("Rampant Evolution - Version 1.6.2")
+        game.print("Rampant Evolution - Version 1.6.3")
     end
 end
 

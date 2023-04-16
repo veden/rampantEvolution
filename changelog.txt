@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.6.3
+  Bugfixes:
+    - Fixed evolutionMultiplier being nil due to missing version change
+
+---------------------------------------------------------------------------------------------------
 Version: 1.6.2
   Bugfixes:
     - Fixed changelog not displaying in-game
