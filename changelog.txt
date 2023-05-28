@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.6.4
+  Bugfixes:
+    - Fixed nans being displayed due to a division by zero when first adding the mod
+
+---------------------------------------------------------------------------------------------------
 Version: 1.6.3
   Bugfixes:
     - Fixed evolutionMultiplier being nil due to missing version change

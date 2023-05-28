@@ -32,14 +32,14 @@ local gui = {}
 
 function gui.calculateDisplayValue(e, world, evo)
     local totalNegEvo = world.totalNegativeEvolution
-    local negEvo = evo
-        * (
-            mAbs(totalNegEvo)
-            / (
-                world.totalPostiveEvolution
-                + mAbs(totalNegEvo)
-              )
-          )
+    local denominator = (
+        world.totalPostiveEvolution
+        + mAbs(totalNegEvo)
+    )
+    if (denominator == 0) then
+        return 0
+    end
+    local negEvo = evo * (mAbs(totalNegEvo) / denominator)
 
     if e < 0 then
         return -negEvo * (e / totalNegEvo)
@@ -264,7 +264,7 @@ function gui.create(player, world)
     end
 
     if world.minimumDevolutionPercentage ~= 0 then
-       contents.add({
+        contents.add({
                 type = "label",
                 caption = {"description.rampant-evolution--minimumEvolution"},
                 tooltip = {"tooltip.rampant-evolution--minimumEvolution"}
